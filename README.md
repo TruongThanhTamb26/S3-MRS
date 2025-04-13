@@ -12,9 +12,6 @@ Thêm/sửa/xóa phòng, cập nhật thông tin thiết bị, trạng thái ph�
 Xác thực tập trung HCMUT_SSO:
 Đăng nhập single-sign-on, phân quyền người dùng (sinh viên, admin, kỹ thuật,…).
 
-Tích hợp IoT (tùy dự án):
-Theo dõi cảm biến (ánh sáng, camera, …), cập nhật trạng thái phòng tự động.
-
 Báo cáo & Thống kê:
 Thống kê lượt đặt, tần suất sử dụng, báo cáo dạng bảng/biểu đồ.
 
