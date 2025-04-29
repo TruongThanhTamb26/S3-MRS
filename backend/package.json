@@ -1,0 +1,31 @@
+{
+  "name": "fullstack-mvc-app",
+  "version": "1.0.0",
+  "description": "A fullstack application using Node.js, Express, React, and MySQL following the MVC architecture.",
+  "main": "src/app.js",
+  "scripts": {
+    "install": "npm install express mysql2 dotenv cors bcryptjs jsonwebtoken express-validator helmet morgan && npm install nodemon --save-dev",
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.21.2",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "mysql2": "^3.14.1",
+    "sequelize": "^6.6.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "author": "TAM",
+  "license": "ISC",
+  "keywords": []
+}
