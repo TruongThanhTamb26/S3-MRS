@@ -1,18 +1,38 @@
-const mysql = require('mysql2'); // Import mysql2 package for MySQL database connection
+const { Sequelize } = require('sequelize');
 const dotenv = require('dotenv');
 
-dotenv.config(); // Load environment variables from .env file
+dotenv.config();
 
+// Tạo kết nối Sequelize
+const sequelize = new Sequelize(
+  process.env.DB_NAME,      // Tên database
+  process.env.DB_USER,      // Username
+  process.env.DB_PASSWORD,  // Password
+  {
+    host: process.env.DB_HOST,  // Host
+    dialect: 'mysql',           // Loại DB là MySQL
+    // Cấu hình connection pool
+    pool: {
+      max: 10,     // Tối đa 10 connections
+      min: 0,      // Tối thiểu 0 connections
+      acquire: 30000,  // Timeout khi lấy connection (30s)
+      idle: 10000      // Thời gian connection không dùng trước khi đóng (10s)
+    },
+    logging: process.env.NODE_ENV === 'development' ? console.log : false
+  }
+);
 
-// Create a connection pool to the MySQL database using environment variables
-const pool = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    waitForConnections: true, 
-    connectionLimit: 10, // Maximum number of connections to create at once
-    queueLimit: 0 
-  });
-  
-  module.exports = pool;
+// Hàm kiểm tra kết nối
+const testConnection = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('Kết nối database thành công.');
+  } catch (error) {
+    console.error('Không thể kết nối đến database:', error);
+  }
+};
+
+// Gọi hàm kiểm tra
+testConnection();
+
+module.exports = sequelize;
