@@ -1,31 +1,62 @@
-const db = require('../config/database');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+const bcrypt = require('bcryptjs');
 
-class User {
-  static async findAll() {
-    const [rows] = await db.query('SELECT id, name, email, role FROM users');
-    return rows;
+const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  username: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+    unique: true
+  },
+  password: {
+    type: DataTypes.STRING(100),
+    allowNull: false
+  },
+  fullName: {
+    type: DataTypes.STRING(100),
+    allowNull: false
+  },
+  email: {
+    type: DataTypes.STRING(100),
+    allowNull: false,
+    unique: true,
+    validate: {
+      isEmail: true
+    }
+  },
+  role: {
+    type: DataTypes.ENUM('student', 'admin', 'staff'),
+    defaultValue: 'student'
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    field: 'created_at',
+    defaultValue: DataTypes.NOW
   }
+}, {
+  hooks: {
+    beforeCreate: async (user) => {
+      if (user.password) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    },
+    beforeUpdate: async (user) => {
+      if (user.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    }
+  }
+});
 
-  static async findById(id) {
-    const [rows] = await db.query('SELECT id, name, email, role FROM users WHERE id = ?', [id]);
-    return rows[0];
-  }
-
-  static async findByEmail(email) {
-    const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    return rows[0];
-  }
-
-  static async create(userData) {
-    const { name, email, password, role } = userData;
-    const [result] = await db.query(
-      'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-      [name, email, password, role || 'user']
-    );
-    return result.insertId;
-  }
-  
-  // Thêm các phương thức khác như update, delete, etc.
-}
+User.prototype.comparePassword = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
 
 module.exports = User;
