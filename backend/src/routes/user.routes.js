@@ -1,12 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/user.controller');
-const { protect, authorize } = require('../middlewares/auth');
+const authMiddleware = require('../middlewares/auth.middleware');
 
+// Đăng ký và đăng nhập không cần xác thực
 router.post('/register', userController.register);
 router.post('/login', userController.login);
-router.get('/profile', protect, userController.getProfile);
-router.put('/profile', protect, userController.updateProfile);
-router.get('/all', protect, authorize('admin'), userController.getAllUsers);
+
+// Các routes cần xác thực
+router.get('/profile', authMiddleware.verifyToken, userController.getProfile);
+router.put('/profile', authMiddleware.verifyToken, userController.updateProfile);
+router.post('/change-password', authMiddleware.verifyToken, userController.changePassword);
+
+// Admin routes
+router.get('/', authMiddleware.verifyToken, authMiddleware.isAdmin, userController.getAllUsers);
 
 module.exports = router;
