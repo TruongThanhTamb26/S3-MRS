@@ -18,7 +18,7 @@ class ReportService {
     const reservationsByStatus = await Reservation.findAll({
       attributes: [
         'status',
-        [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']
+        [Sequelize.fn('COUNT', Sequelize.col('Reservation.id')), 'count']
       ],
       where: {
         startTime: { [Op.between]: [start, end] }
@@ -30,7 +30,7 @@ class ReportService {
     const roomUsage = await Reservation.findAll({
       attributes: [
         'roomId',
-        [Sequelize.fn('COUNT', Sequelize.col('id')), 'reservationCount'],
+        [Sequelize.fn('COUNT', Sequelize.col('Reservation.id')), 'reservationCount'],
         [Sequelize.fn('SUM', 
           Sequelize.literal('TIMESTAMPDIFF(MINUTE, startTime, endTime)')), 
           'totalMinutes'
@@ -53,7 +53,7 @@ class ReportService {
     const topUsers= await Reservation.findAll({
       attributes: [
         'userId',
-        [Sequelize.fn('COUNT', Sequelize.col('id')), 'reservationCount']
+        [Sequelize.fn('COUNT', Sequelize.col('Reservation.id')), 'reservationCount']
       ],
       include: [
         {
