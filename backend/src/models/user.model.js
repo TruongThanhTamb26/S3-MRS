@@ -32,11 +32,6 @@ const User = sequelize.define('User', {
   role: {
     type: DataTypes.ENUM('student', 'admin', 'staff'),
     defaultValue: 'student'
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    defaultValue: DataTypes.NOW
   }
 }, {
   hooks: {
