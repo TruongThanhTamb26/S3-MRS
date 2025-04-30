@@ -1,3 +1,4 @@
+const { create } = require('../repositories/reservation.repository');
 const userService = require('../services/user.service');
 
 class UserController {
@@ -14,7 +15,9 @@ class UserController {
           username: user.username,
           fullName: user.fullName,
           email: user.email,
-          role: user.role
+          role: user.role,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
         }
       });
     } catch (error) {
