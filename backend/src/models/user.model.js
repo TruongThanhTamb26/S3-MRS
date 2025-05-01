@@ -47,7 +47,8 @@ const User = sequelize.define('User', {
         user.password = await bcrypt.hash(user.password, salt);
       }
     }
-  }
+  },
+  timezone: '+07:00'
 });
 
 User.prototype.comparePassword = async function (password) {
