@@ -11,6 +11,12 @@ const sequelize = new Sequelize(
   {
     host: process.env.DB_HOST,  // Host
     dialect: 'mysql',           // Loại DB là MySQL
+    // Thiết lập múi giờ GMT+7
+    timezone: '+07:00',
+    dialectOptions: {
+      // Đảm bảo timezone được áp dụng cho truy vấn MySQL
+      timezone: '+07:00',
+    },
     // Cấu hình connection pool
     pool: {
       max: 10,     // Tối đa 10 connections
