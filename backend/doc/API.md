@@ -1,0 +1,30 @@
+1. API Quản Lý Người Dùng (User)
+POST /api/users/register: Đăng ký người dùng mới
+POST /api/users/login: Đăng nhập
+GET /api/users/profile: Xem thông tin cá nhân (yêu cầu token)
+PUT /api/users/profile: Cập nhật thông tin cá nhân (yêu cầu token)
+POST /api/users/change-password: Đổi mật khẩu (yêu cầu token)
+GET /api/users: Lấy danh sách người dùng (yêu cầu quyền admin)
+2. API Quản Lý Phòng (Room)
+GET /api/rooms: Lấy danh sách tất cả phòng học
+GET /api/rooms/available: Tìm phòng học khả dụng theo thời gian
+GET /api/rooms/:id: Xem chi tiết phòng học
+POST /api/rooms: Tạo phòng học mới (yêu cầu quyền admin)
+PUT /api/rooms/:id: Cập nhật thông tin phòng học (yêu cầu quyền admin)
+DELETE /api/rooms/:id: Xóa phòng học (yêu cầu quyền admin)
+PATCH /api/rooms/:id/status: Cập nhật trạng thái phòng học (yêu cầu quyền admin)
+3. API Đặt Phòng (Reservation)
+POST /api/reservations: Tạo đặt phòng mới (yêu cầu token)
+GET /api/reservations/my-reservations: Xem lịch đặt phòng của người dùng (yêu cầu token)
+GET /api/reservations/:id: Xem chi tiết đặt phòng (yêu cầu token)
+PUT /api/reservations/:id: Cập nhật thông tin đặt phòng (yêu cầu token)
+DELETE /api/reservations/:id: Hủy đặt phòng (yêu cầu token)
+POST /api/reservations/:id/check-in: Check-in phòng (yêu cầu token)
+POST /api/reservations/:id/check-out: Check-out phòng (yêu cầu token)
+GET /api/reservations: Xem tất cả đặt phòng (yêu cầu quyền admin)
+4. API Quản Lý Thiết Bị (Device)
+GET /api/devices/room/:roomId: Lấy danh sách thiết bị trong phòng (yêu cầu quyền technician)
+PUT /api/devices/room/:roomId: Cập nhật số lượng thiết bị trong phòng (yêu cầu quyền technician)
+5. API Báo Cáo (Report)
+GET /api/reports/usage: Tạo báo cáo tổng hợp sử dụng phòng học (yêu cầu quyền admin)
+GET /api/reports/room/:roomId: Tạo báo cáo sử dụng phòng học cụ thể (yêu cầu quyền admin)
