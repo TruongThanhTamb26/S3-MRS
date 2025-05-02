@@ -14,7 +14,7 @@ export const EquipmentTable: React.FC = () => (
         <tr>
           <th className="px-4 py-2 text-left">STT</th>
           <th className="px-4 py-2 text-left">Phòng</th>
-          <th className="px-4 py-2 text-left">Projector</th>
+          <th className="px-4 py-2 text-left">Máy chiếu</th>
           <th className="px-4 py-2 text-left">Điều hoà</th>
           <th className="px-4 py-2 text-left">Mic</th>
           <th className="px-4 py-2 text-left"> </th>
