@@ -18,18 +18,14 @@ const Reservation = sequelize.define('Reservation', {
     allowNull: false
   },
   status: {
-    type: DataTypes.ENUM('pending', 'confirmed', 'cancelled', 'completed'),
-    defaultValue: 'pending'
-  },
-  purpose: {
-    type: DataTypes.STRING(200),
-    allowNull: true
+    type: DataTypes.ENUM('confirmed', 'cancelled', 'completed'),
+    defaultValue: 'confirmed'
   },
   notes: {
     type: DataTypes.TEXT,
     allowNull: true
   },
-  participantsCount: {
+  capacity: {
     type: DataTypes.INTEGER,
     allowNull: false,
     defaultValue: 1
@@ -45,10 +41,10 @@ const Reservation = sequelize.define('Reservation', {
 });
 
 // Định nghĩa mối quan hệ
-Room.hasMany(Reservation);
-Reservation.belongsTo(Room);
+Room.hasMany(Reservation, { foreignKey: 'roomId' });
+Reservation.belongsTo(Room, { foreignKey: 'roomId' });
 
-User.hasMany(Reservation);
-Reservation.belongsTo(User);
+User.hasMany(Reservation, { foreignKey: 'userId' });
+Reservation.belongsTo(User, { foreignKey: 'userId' });
 
 module.exports = Reservation;

@@ -50,7 +50,7 @@ class ReservationRepository {
   }
 
   async findByRoomId(roomId, options = {}) {
-    return await Reservation.findAll({
+    return await Reservation.findOne({
       where: { roomId },
       include: [
         { model: User, attributes: ['id', 'username', 'fullName'] }
@@ -72,7 +72,7 @@ class ReservationRepository {
           ]
         }
       ],
-      status: { [Op.in]: ['pending', 'confirmed'] }
+      status: { [Op.in]: ['confirmed'] }
     };
 
     if (excludeId) {

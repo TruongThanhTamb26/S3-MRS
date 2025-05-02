@@ -27,7 +27,6 @@ async function testReservationRepository() {
       equipment: JSON.stringify({
         hasProjector: true
       }),
-      roomType: 'individual'
     });
 
     // Test tạo đặt phòng
@@ -41,9 +40,8 @@ async function testReservationRepository() {
       RoomId: room.id,
       startTime,
       endTime,
-      status: 'pending',
-      purpose: 'Testing reservation',
-      participantsCount: 1
+      status: ' confirmed',
+      capacity: 1
     };
     
     const reservation = await reservationRepository.create(reservationData);

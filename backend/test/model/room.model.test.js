@@ -24,7 +24,6 @@ async function testRoomModel() {
         hasAirCon: true,
         hasWhiteboard: true
       }),
-      roomType: 'group'
     });
 
     console.log('✅ Đã tạo phòng:', testRoom.toJSON());

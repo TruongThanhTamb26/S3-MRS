@@ -6,7 +6,6 @@ class RoomController {
       const filters = {
         status: req.query.status,
         capacity: req.query.capacity ? parseInt(req.query.capacity) : null,
-        roomType: req.query.roomType
       };
       
       const rooms = await roomService.getAllRooms(filters);

@@ -6,7 +6,7 @@ const data = [
     building: "BK.B1",
     capacity: 10,
     status: "Mở",
-    device: "Máy chiếu",
+    device: "Projector",
     admin: "Admin1",
   },
   {
@@ -22,7 +22,7 @@ const data = [
     building: "BK.B1",
     capacity: 10,
     status: "Bận",
-    device: "Máy chiếu, điều hoà",
+    device: "Projector, điều hoà",
     admin: "Admin1",
   },
   {

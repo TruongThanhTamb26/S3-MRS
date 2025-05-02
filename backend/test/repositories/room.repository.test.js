@@ -25,7 +25,6 @@ async function testRoomRepository() {
         hasProjector: true,
         hasAirCon: true
       }),
-      roomType: 'individual'
     };
     const room = await roomRepository.create(roomData);
     console.log('✅ Đã tạo phòng:', room.id, room.name);
