@@ -29,11 +29,6 @@ const Room = sequelize.define('Room', {
     type: DataTypes.JSON,
     allowNull: true,
     comment: 'List of available equipment in the room'
-  },
-  roomType: {
-    type: DataTypes.ENUM('individual', 'group', 'mentoring'),
-    allowNull: false,
-    defaultValue: 'individual'
   }
 });
 

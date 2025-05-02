@@ -7,6 +7,9 @@ class ReportService {
     const start = new Date(startDate);
     const end = new Date(endDate);
     
+    console.log('Start date:', start);
+
+    console.log('End date:', end);
     // Tổng số lượt đặt phòng
     const totalReservations = await Reservation.count({
       where: {

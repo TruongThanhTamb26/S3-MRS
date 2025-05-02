@@ -38,7 +38,7 @@ class ReservationService {
     }
 
     // Kiểm tra số người phù hợp với sức chứa
-    if (reservationData.participantsCount > room.capacity) {
+    if (reservationData.capacity > room.capacity) {
       throw new Error(`Số người vượt quá sức chứa của phòng (tối đa ${room.capacity} người)`);
     }
 

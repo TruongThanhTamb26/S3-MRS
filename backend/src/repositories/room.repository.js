@@ -62,7 +62,7 @@ class RoomRepository {
             ]
           }
         ],
-        status: { [Op.in]: ['pending', 'confirmed'] }
+        status: { [Op.in]: ['confirmed'] }
       },
       attributes: ['roomId']
     });

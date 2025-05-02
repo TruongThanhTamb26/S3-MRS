@@ -29,7 +29,6 @@ async function testReservationModel() {
         hasAirCon: true,
         hasWhiteboard: true
       }),
-      roomType: 'group'
     });
 
     // Tạo reservation mẫu
@@ -42,9 +41,8 @@ async function testReservationModel() {
       RoomId: testRoom.id,
       startTime,
       endTime,
-      status: 'pending',
-      purpose: 'Học nhóm môn Công nghệ phần mềm',
-      participantsCount: 5
+      status: 'confirmed',
+      capacity: 5
     });
 
     console.log('✅ Đã tạo đặt phòng:', testReservation.toJSON());

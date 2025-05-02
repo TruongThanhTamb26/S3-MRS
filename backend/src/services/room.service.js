@@ -14,10 +14,6 @@ class RoomService {
     if (filters.capacity) {
       options.where = { ...options.where, capacity: { [Op.gte]: filters.capacity } };
     }
-    
-    if (filters.roomType) {
-      options.where = { ...options.where, roomType: filters.roomType };
-    }
 
     return await roomRepository.findAll(options);
   }
@@ -62,10 +58,12 @@ class RoomService {
     const reservations = await reservationRepository.findByRoomId(id, {
       where: {
         status: {
-          [Op.in]: ['pending', 'confirmed']
+          [Op.in]: ['confirmed']
         }
       }
     });
+
+    console.log(id, reservations);
 
     if (reservations.length > 0) {
       throw new Error('Không thể xóa phòng đang có lịch đặt');

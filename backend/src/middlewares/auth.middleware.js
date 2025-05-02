@@ -55,8 +55,8 @@ const authMiddleware = {
     next();
   },
 
-  isStaffOrAdmin: (req, res, next) => {
-    if (req.user.role !== 'admin' && req.user.role !== 'staff') {
+  isTechnician: (req, res, next) => {
+    if (req.user.role !== 'technician') {
       return res.status(403).json({
         success: false,
         message: 'Bạn không có quyền truy cập tài nguyên này'
