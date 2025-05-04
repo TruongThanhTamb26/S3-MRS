@@ -103,6 +103,45 @@ class UserService {
     
     return await userRepository.findAll(options);
   }
+
+  async updateUserById(id, userData) {
+    // Kiểm tra user có tồn tại không
+    const user = await userRepository.findById(id);
+    if (!user) {
+      throw new Error('Không tìm thấy người dùng');
+    }
+    
+    // Kiểm tra email nếu có thay đổi
+    if (userData.email && userData.email !== user.email) {
+      const existingEmail = await userRepository.findByEmail(userData.email);
+      if (existingEmail && existingEmail.id !== id) {
+        throw new Error('Email đã tồn tại');
+      }
+    }
+    
+    // Kiểm tra username nếu có thay đổi
+    if (userData.username && userData.username !== user.username) {
+      const existingUsername = await userRepository.findByUsername(userData.username);
+      if (existingUsername && existingUsername.id !== id) {
+        throw new Error('Tên đăng nhập đã tồn tại');
+      }
+    }
+    
+    // Cập nhật thông tin người dùng
+    return await userRepository.update(id, userData);
+  }
+
+  async deleteUserById(id) {
+    // Kiểm tra user có tồn tại không
+    const user = await userRepository.findById(id);
+    if (!user) {
+      throw new Error('Không tìm thấy người dùng');
+    }
+    
+    // Xóa người dùng
+    return await userRepository.delete(id);
+  }
+
 }
 
 module.exports = new UserService();

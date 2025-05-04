@@ -99,7 +99,7 @@ export const adminService = {
     // Create new user
     async createUser(userData: Partial<User>): Promise<UserResponse> {
         try {
-            const response = await axios.post(`${API_URL}/users`, userData, {
+            const response = await axios.post(`${API_URL}/users/register`, userData, {
                 headers: {
                     'Content-Type': 'application/json',
                     ...getAuthHeader()
@@ -115,7 +115,7 @@ export const adminService = {
     // Update user
     async updateUser(id: number, userData: Partial<User>): Promise<UserResponse> {
         try {
-            const response = await axios.put(`${API_URL}/users/profile`, userData, {
+            const response = await axios.put(`${API_URL}/users/${id}`, userData, {
                 headers: {
                     'Content-Type': 'application/json',
                     ...getAuthHeader()

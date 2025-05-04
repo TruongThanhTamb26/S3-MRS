@@ -2,6 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashNavbar } from "../components/DashNavbar";
 import { adminService } from "../services/admin.service";
+import { userService } from "../services/user.service";
+
+interface Equipment {
+  Mic: number;
+  Projector: number;
+  AirCon: number;
+  [key: string]: number;
+}
 
 interface Room {
   id: number;
@@ -9,6 +17,7 @@ interface Room {
   capacity: number;
   location: string;
   status: string;
+  equipment: Equipment;
 }
 
 interface User {
@@ -50,6 +59,7 @@ const BookingManagement: React.FC = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [currentReservation, setCurrentReservation] = useState<Reservation | null>(null);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
   
   // Clear success message after 5 seconds
   useEffect(() => {
@@ -101,7 +111,7 @@ const BookingManagement: React.FC = () => {
     setFilteredReservations(result);
   }, [reservations, searchTerm, statusFilter, dateRangeFilter]);
 
-  // Fetch reservations data
+  // Fetch reservations data with enhanced details
   const fetchReservations = async () => {
     setIsLoading(true);
     setError("");
@@ -110,8 +120,43 @@ const BookingManagement: React.FC = () => {
       const response = await adminService.getAllReservations();
       
       if (response.success) {
-        setReservations(response.data);
-        setFilteredReservations(response.data);
+        const reservationsData = response.data;
+        
+        // Get complete details for each reservation
+        const enhancedReservations = await Promise.all(
+          reservationsData.map(async (reservation: Reservation) => {
+            let enhancedReservation = { ...reservation };
+            
+            // If room details are missing or incomplete
+            if (!reservation.room || !reservation.room.equipment) {
+              try {
+                const roomResponse = await userService.getRoomDetails(reservation.roomId);
+                if (roomResponse.success) {
+                  enhancedReservation.room = roomResponse.data;
+                }
+              } catch (error) {
+                console.error(`Error fetching details for room ${reservation.roomId}:`, error);
+              }
+            }
+            
+            // If user details are missing or incomplete
+            if (!reservation.user) {
+              try {
+                const userResponse = await adminService.getUserById(reservation.userId);
+                if (userResponse.success) {
+                  enhancedReservation.user = userResponse.data;
+                }
+              } catch (error) {
+                console.error(`Error fetching details for user ${reservation.userId}:`, error);
+              }
+            }
+            
+            return enhancedReservation;
+          })
+        );
+        
+        setReservations(enhancedReservations);
+        setFilteredReservations(enhancedReservations);
       } else {
         setError("Không thể tải danh sách đặt phòng");
       }
@@ -143,6 +188,44 @@ const BookingManagement: React.FC = () => {
     return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
   };
 
+  // Load detailed reservation info
+  const loadDetailedReservation = async (reservation: Reservation) => {
+    setDetailsLoading(true);
+    let detailedReservation = { ...reservation };
+    
+    try {
+      // Fetch complete room details
+      if (reservation.roomId) {
+        const roomResponse = await userService.getRoomDetails(reservation.roomId);
+        if (roomResponse.success) {
+          detailedReservation.room = roomResponse.data;
+        }
+      }
+      
+      // Fetch complete user details
+      if (reservation.userId) {
+        const userResponse = await adminService.getUserById(reservation.userId);
+        if (userResponse.success) {
+          detailedReservation.user = userResponse.data;
+        }
+      }
+      
+      setCurrentReservation(detailedReservation);
+    } catch (err: any) {
+      console.error("Error loading detailed reservation:", err);
+      // Still set the reservation, even with partial data
+      setCurrentReservation(detailedReservation);
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
+  // Show reservation details
+  const openDetailsModal = async (reservation: Reservation) => {
+    await loadDetailedReservation(reservation);
+    setShowDetailsModal(true);
+  };
+
   // Handle approve reservation
   const handleApproveReservation = async (id: number) => {
     setActionLoading(id);
@@ -158,6 +241,14 @@ const BookingManagement: React.FC = () => {
         );
         setReservations(updatedReservations);
         setSuccess("Xác nhận đặt phòng thành công");
+        
+        // Update current reservation if it's the one being approved
+        if (currentReservation && currentReservation.id === id) {
+          setCurrentReservation({
+            ...currentReservation,
+            status: 'confirmed'
+          });
+        }
       } else {
         setError("Không thể xác nhận đặt phòng");
       }
@@ -184,6 +275,14 @@ const BookingManagement: React.FC = () => {
         );
         setReservations(updatedReservations);
         setSuccess("Từ chối đặt phòng thành công");
+        
+        // Update current reservation if it's the one being rejected
+        if (currentReservation && currentReservation.id === id) {
+          setCurrentReservation({
+            ...currentReservation,
+            status: 'cancelled'
+          });
+        }
       } else {
         setError("Không thể từ chối đặt phòng");
       }
@@ -210,6 +309,14 @@ const BookingManagement: React.FC = () => {
         );
         setReservations(updatedReservations);
         setSuccess("Check-in thành công");
+        
+        // Update current reservation if it's the one being checked in
+        if (currentReservation && currentReservation.id === id) {
+          setCurrentReservation({
+            ...currentReservation,
+            status: 'checked-in'
+          });
+        }
       } else {
         setError("Không thể check-in");
       }
@@ -236,6 +343,14 @@ const BookingManagement: React.FC = () => {
         );
         setReservations(updatedReservations);
         setSuccess("Check-out thành công");
+        
+        // Update current reservation if it's the one being checked out
+        if (currentReservation && currentReservation.id === id) {
+          setCurrentReservation({
+            ...currentReservation,
+            status: 'completed'
+          });
+        }
       } else {
         setError("Không thể check-out");
       }
@@ -245,12 +360,6 @@ const BookingManagement: React.FC = () => {
     } finally {
       setActionLoading(null);
     }
-  };
-
-  // Show reservation details
-  const openDetailsModal = (reservation: Reservation) => {
-    setCurrentReservation(reservation);
-    setShowDetailsModal(true);
   };
 
   // Get status badge
@@ -269,6 +378,23 @@ const BookingManagement: React.FC = () => {
       default:
         return <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">{status}</span>;
     }
+  };
+
+  // Render equipment list
+  const renderEquipment = (equipment?: Equipment) => {
+    if (!equipment) return 'Không có thông tin';
+    
+    return (
+      <ul className="mt-1 text-sm text-gray-900">
+        {Object.entries(equipment).map(([key, value]) => (
+          value > 0 && (
+            <li key={key} className="flex items-center">
+              <span>{key}: {value}</span>
+            </li>
+          )
+        ))}
+      </ul>
+    );
   };
 
   // Clear all filters
@@ -562,152 +688,175 @@ const BookingManagement: React.FC = () => {
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div className="sm:flex sm:items-start">
-                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">
-                      Chi tiết đặt phòng #{currentReservation.id}
-                    </h3>
-                    
-                    <div className="mt-4 border-t border-gray-200 pt-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm font-medium text-gray-500">Phòng</p>
-                          <p className="mt-1 text-sm text-gray-900">
-                            {currentReservation.room?.name || `Phòng #${currentReservation.roomId}`}
-                          </p>
-                        </div>
+              {detailsLoading ? (
+                <div className="bg-white p-8 flex justify-center items-center">
+                  <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : (
+                <>
+                  <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div className="sm:flex sm:items-start">
+                      <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">
+                          Chi tiết đặt phòng #{currentReservation.id}
+                        </h3>
                         
-                        <div>
-                          <p className="text-sm font-medium text-gray-500">Vị trí</p>
-                          <p className="mt-1 text-sm text-gray-900">
-                            {currentReservation.room?.location || 'Không có thông tin'}
-                          </p>
-                        </div>
-                        
-                        <div>
-                          <p className="text-sm font-medium text-gray-500">Sức chứa</p>
-                          <p className="mt-1 text-sm text-gray-900">
-                            {currentReservation.room?.capacity || 'Không có thông tin'} người
-                          </p>
-                        </div>
-                        
-                        <div>
-                          <p className="text-sm font-medium text-gray-500">Trang thiết bị</p>
-                          
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4 border-t border-gray-200 pt-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Người đặt</p>
-                            <p className="mt-1 text-sm text-gray-900">
-                              {currentReservation.user?.fullName || `Người dùng #${currentReservation.userId}`}
-                            </p>
-                          </div>
-                          
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Email</p>
-                            <p className="mt-1 text-sm text-gray-900">
-                              {currentReservation.user?.email || 'Không có thông tin'}
-                            </p>
-                          </div>
-                          
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Ngày đặt</p>
-                            <p className="mt-1 text-sm text-gray-900">
-                              {formatDate(currentReservation.startTime)}
-                            </p>
-                          </div>
-                          
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Thời gian</p>
-                            <p className="mt-1 text-sm text-gray-900">
-                              {formatTime(currentReservation.startTime)} - {formatTime(currentReservation.endTime)}
-                            </p>
-                          </div>
-                          
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Trạng thái</p>
-                            <div className="mt-1">
-                              {getStatusBadge(currentReservation.status)}
+                        <div className="mt-4 border-t border-gray-200 pt-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Phòng</p>
+                              <p className="mt-1 text-sm text-gray-900">
+                                {currentReservation.room?.name || `Phòng #${currentReservation.roomId}`}
+                              </p>
+                            </div>
+                            
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Vị trí</p>
+                              <p className="mt-1 text-sm text-gray-900">
+                                {currentReservation.room?.location || 'Không có thông tin'}
+                              </p>
+                            </div>
+                            
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Sức chứa</p>
+                              <p className="mt-1 text-sm text-gray-900">
+                                {currentReservation.room?.capacity || 'Không có thông tin'} người
+                              </p>
+                            </div>
+                            
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Trang thiết bị</p>
+                              {renderEquipment(currentReservation.room?.equipment)}
                             </div>
                           </div>
                           
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Ngày tạo</p>
-                            <p className="mt-1 text-sm text-gray-900">
-                              {formatDate(currentReservation.createdAt)} {formatTime(currentReservation.createdAt)}
-                            </p>
+                          <div className="mt-4 border-t border-gray-200 pt-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-sm font-medium text-gray-500">Người đặt</p>
+                                <p className="mt-1 text-sm text-gray-900">
+                                  {currentReservation.user?.fullName || `Người dùng #${currentReservation.userId}`}
+                                </p>
+                              </div>
+                              
+                              <div>
+                                <p className="text-sm font-medium text-gray-500">Email</p>
+                                <p className="mt-1 text-sm text-gray-900">
+                                  {currentReservation.user?.email || 'Không có thông tin'}
+                                </p>
+                              </div>
+                              
+                              <div>
+                                <p className="text-sm font-medium text-gray-500">Vai trò</p>
+                                <p className="mt-1 text-sm text-gray-900">
+                                  {currentReservation.user?.role === 'admin' ? 'Quản trị viên' :
+                                  currentReservation.user?.role === 'technician' ? 'Kỹ thuật viên' : 'Người dùng'}
+                                </p>
+                              </div>
+                              
+                              <div>
+                                <p className="text-sm font-medium text-gray-500">Tên đăng nhập</p>
+                                <p className="mt-1 text-sm text-gray-900">
+                                  {currentReservation.user?.username || 'Không có thông tin'}
+                                </p>
+                              </div>
+                              
+                              <div>
+                                <p className="text-sm font-medium text-gray-500">Ngày đặt</p>
+                                <p className="mt-1 text-sm text-gray-900">
+                                  {formatDate(currentReservation.startTime)}
+                                </p>
+                              </div>
+                              
+                              <div>
+                                <p className="text-sm font-medium text-gray-500">Thời gian</p>
+                                <p className="mt-1 text-sm text-gray-900">
+                                  {formatTime(currentReservation.startTime)} - {formatTime(currentReservation.endTime)}
+                                </p>
+                              </div>
+                              
+                              <div>
+                                <p className="text-sm font-medium text-gray-500">Trạng thái</p>
+                                <div className="mt-1">
+                                  {getStatusBadge(currentReservation.status)}
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <p className="text-sm font-medium text-gray-500">Ngày tạo</p>
+                                <p className="mt-1 text-sm text-gray-900">
+                                  {formatDate(currentReservation.createdAt)} {formatTime(currentReservation.createdAt)}
+                                </p>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-              
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                {currentReservation.status === 'pending' && (
-                  <>
+                  
+                  <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    {currentReservation.status === 'pending' && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleApproveReservation(currentReservation.id);
+                            setShowDetailsModal(false);
+                          }}
+                          className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
+                        >
+                          Xác nhận
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleRejectReservation(currentReservation.id);
+                            setShowDetailsModal(false);
+                          }}
+                          className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                        >
+                          Từ chối
+                        </button>
+                      </>
+                    )}
+                    
+                    {currentReservation.status === 'confirmed' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleCheckIn(currentReservation.id);
+                          setShowDetailsModal(false);
+                        }}
+                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                      >
+                        Check-in
+                      </button>
+                    )}
+                    
+                    {currentReservation.status === 'checked-in' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleCheckOut(currentReservation.id);
+                          setShowDetailsModal(false);
+                        }}
+                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                      >
+                        Check-out
+                      </button>
+                    )}
+                    
                     <button
                       type="button"
-                      onClick={() => {
-                        handleApproveReservation(currentReservation.id);
-                        setShowDetailsModal(false);
-                      }}
-                      className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
+                      onClick={() => setShowDetailsModal(false)}
+                      className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                     >
-                      Xác nhận
+                      Đóng
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        handleRejectReservation(currentReservation.id);
-                        setShowDetailsModal(false);
-                      }}
-                      className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                    >
-                      Từ chối
-                    </button>
-                  </>
-                )}
-                
-                {currentReservation.status === 'confirmed' && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleCheckIn(currentReservation.id);
-                      setShowDetailsModal(false);
-                    }}
-                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  >
-                    Check-in
-                  </button>
-                )}
-                
-                {currentReservation.status === 'checked-in' && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleCheckOut(currentReservation.id);
-                      setShowDetailsModal(false);
-                    }}
-                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  >
-                    Check-out
-                  </button>
-                )}
-                
-                <button
-                  type="button"
-                  onClick={() => setShowDetailsModal(false)}
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                >
-                  Đóng
-                </button>
-              </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

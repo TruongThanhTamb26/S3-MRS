@@ -7,7 +7,28 @@ const authMiddleware = require('../middlewares/auth.middleware');
 router.use(authMiddleware.verifyToken);
 router.use(authMiddleware.isAdmin);
 
-router.get('/usage', reportController.generateUsageReport);
-router.get('/room/:roomId', reportController.generateRoomUtilizationReport);
+// Báo cáo sử dụng tổng quan
+router.get('/usage', reportController.getUsageReport);
+
+// Báo cáo sử dụng phòng
+router.get('/rooms/utilization', reportController.getRoomUtilizationReport);
+
+// Báo cáo chi tiết phòng cụ thể
+router.get('/room/:roomId', reportController.getRoomDetailReport);
+
+// Báo cáo phân bố thời gian
+router.get('/time-distribution', reportController.getTimeDistributionReport);
+
+// Báo cáo hoạt động người dùng
+router.get('/user-activity', reportController.getUserActivityReport);
+
+// Tổng quan dashboard
+router.get('/dashboard', reportController.getDashboardSummary);
+
+// Thống kê theo tháng
+router.get('/monthly-stats', reportController.getMonthlyStats);
+
+// Xuất báo cáo
+router.get('/export/:reportType', reportController.exportReport);
 
 module.exports = router;

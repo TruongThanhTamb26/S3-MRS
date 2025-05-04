@@ -13,6 +13,8 @@ router.put('/profile', authMiddleware.verifyToken, userController.updateProfile)
 router.post('/change-password', authMiddleware.verifyToken, userController.changePassword);
 
 // Admin routes
+router.get('/:id', authMiddleware.verifyToken, authMiddleware.isAdmin, userController.getUserById);
 router.get('/', authMiddleware.verifyToken, authMiddleware.isAdmin, userController.getAllUsers);
-
+router.put('/:id', authMiddleware.verifyToken, authMiddleware.isAdmin, userController.updateUserById);
+router.delete('/:id', authMiddleware.verifyToken, authMiddleware.isAdmin, userController.deleteUserById);
 module.exports = router;

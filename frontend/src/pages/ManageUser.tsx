@@ -29,7 +29,7 @@ const UserManagement: React.FC = () => {
     username: "",
     fullName: "",
     email: "",
-    role: "user",
+    role: "student",
     password: ""
   });
   
@@ -97,7 +97,7 @@ const UserManagement: React.FC = () => {
       username: "",
       fullName: "",
       email: "",
-      role: "user",
+      role: "student",
       password: ""
     });
     setModalMode('add');
@@ -148,7 +148,7 @@ const UserManagement: React.FC = () => {
       } else if (modalMode === 'edit' && currentUser) {
         // Update existing user
         const updateData = {...formData};
-				
+
         const response = await adminService.updateUser(currentUser.id, updateData);
         
         if (response.success) {
@@ -204,7 +204,7 @@ const UserManagement: React.FC = () => {
         return <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Admin</span>;
       case 'technician':
         return <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Kỹ thuật viên</span>;
-      case 'user':
+      case 'student':
       default:
         return <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Người dùng</span>;
     }
@@ -312,7 +312,7 @@ const UserManagement: React.FC = () => {
                   <option value="all">Tất cả vai trò</option>
                   <option value="admin">Admin</option>
                   <option value="technician">Kỹ thuật viên</option>
-                  <option value="user">Người dùng</option>
+                  <option value="student">Người dùng</option>
                 </select>
               </div>
               
@@ -490,7 +490,7 @@ const UserManagement: React.FC = () => {
                   onChange={handleInputChange}
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
-                  <option value="user">Người dùng</option>
+                  <option value="student">Người dùng</option>
                   <option value="technician">Kỹ thuật viên</option>
                   <option value="admin">Admin</option>
                 </select>
