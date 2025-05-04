@@ -52,7 +52,7 @@ const BookingConfirm: React.FC = () => {
       };
 
       const response = await userService.bookRoom(bookingData);
-
+      console.log("Booking response:", response);
       if (response.success) {
         // Navigate to manage page with success message
         navigate('/manage', { 

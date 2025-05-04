@@ -100,7 +100,6 @@ export const userService = {
     async getUserReservations(): Promise<ReservationsResponse> {
         try {
             const response = await axios.get(`${API_URL}/reservations/my-reservations`, {
-                params: { status },
                 headers: {
                     'Content-Type': 'application/json',
                     ...getAuthHeader()

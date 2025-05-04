@@ -48,7 +48,7 @@ const AdminReport: React.FC = () => {
         dateRange.startDate, 
         dateRange.endDate
       );
-      
+
       if (bookingResponse.success) {
         setBookingStats(bookingResponse.data.bookingsByStatus || []);
         setSummaryData(prev => ({
@@ -64,6 +64,7 @@ const AdminReport: React.FC = () => {
         dateRange.startDate, 
         dateRange.endDate
       );
+
       
       if (roomResponse.success) {
         const roomData = roomResponse.data.roomUtilization || [];

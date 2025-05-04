@@ -29,6 +29,12 @@ interface RegisterResponse {
     message?: string;
 }
 
+//implement getAuthHeader function to add token to requests
+const getAuthHeader = () => {
+    const token = localStorage.getItem('token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+};
+
 export const authService = {
     // Đăng nhập
     async login(username: string, password: string): Promise<AuthResponse> {
@@ -63,9 +69,21 @@ export const authService = {
     },
 
     // Đăng xuất
-    logout(): void {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+    async logout(): Promise<void> {
+        try {
+            // Gọi API đăng xuất nếu cần
+            await axios.post(`${API_URL}/auth/logout`, {}, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getAuthHeader()
+                }
+            });
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            // Xóa token khỏi localStorage
+            localStorage.removeItem('token');
+        }
     },
 
     // Kiểm tra đã đăng nhập chưa

@@ -21,12 +21,17 @@ const Login: React.FC = () => {
     setError("");
     
     try {
-      const response = await authService.login( username, password );
+      console.log('Attempting login with:', { username });
+      const response = await authService.login(username, password);
+      console.log('Login response:', response);
 
       if (response.success) {
         // Store token and user info
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
+        
+        console.log('Login successful, user role:', response.data.user.role);
+        console.log('Token saved:', response.data.token);
         
         // Redirect based on user role
         const { role } = response.data.user;
@@ -35,14 +40,22 @@ const Login: React.FC = () => {
         } else if (role === 'admin') {
           navigate('/admin/dashboard');
         } else if (role === 'technician') {
-          navigate('/technician/dashboard');
+          navigate('/technician/equipment');
         }
       } else {
+        console.error('Login failed:', response.message);
         setError(response.message || "Đăng nhập thất bại");
       }
     } catch (err: any) {
       console.error("Login error:", err);
-      setError(err.response?.message || "Đăng nhập thất bại. Vui lòng thử lại.");
+      // Check if the error has a response object with data
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.message) {
+        setError(err.message);
+      } else {
+        setError("Đăng nhập thất bại. Vui lòng thử lại.");
+      }
     } finally {
       setIsLoading(false);
     }

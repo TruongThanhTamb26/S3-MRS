@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import UserNavbar from "../components/UserNavbar";
 import { userService } from "../services/user.service";
-import api from '../services/api.service';
+
 
 // Define Room interface based on backend model
 interface Room {

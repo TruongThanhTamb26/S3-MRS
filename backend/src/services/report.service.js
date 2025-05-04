@@ -73,42 +73,28 @@ class ReportService {
     // Tính tổng số phút trong khoảng thời gian
     const totalMinutesInPeriod = (end - start) / (60 * 1000);
     
-    // Tần suất sử dụng từng phòng
-    const roomUtilization = await Room.findAll({
-      attributes: [
-        'id', 
-        'name', 
-        'location'
-      ],
-      include: [
-        {
-          model: Reservation,
-          attributes: [
-            [Sequelize.fn('COUNT', Sequelize.col('Reservation.id')), 'reservationCount'],
-            [
-              Sequelize.fn(
-                'SUM', 
-                Sequelize.literal('TIMESTAMPDIFF(MINUTE, Reservation.startTime, Reservation.endTime)')
-              ), 
-              'totalMinutes'
-            ]
-          ],
-          where: {
-            startTime: { [Op.between]: [start, end] },
-            status: { [Op.not]: 'cancelled' }
-          },
-          required: false
-        }
-      ],
-      group: ['Room.id'],
-      raw: true,
-      nest: true
+    // Sử dụng raw query thay vì Sequelize ORM để tránh vấn đề về tên cột
+    const roomUtilization = await sequelize.query(`
+      SELECT 
+        r.id, 
+        r.name, 
+        r.location,
+        COUNT(res.id) as reservationCount,
+        SUM(TIMESTAMPDIFF(MINUTE, res.startTime, res.endTime)) as totalMinutes
+      FROM Rooms r
+      LEFT JOIN Reservations res ON r.id = res.roomId 
+        AND res.startTime BETWEEN ? AND ?
+        AND res.status != 'cancelled'
+      GROUP BY r.id, r.name, r.location
+    `, {
+      replacements: [start, end],
+      type: sequelize.QueryTypes.SELECT
     });
 
     // Tính tỷ lệ sử dụng cho từng phòng
     const result = roomUtilization.map(room => {
-      const reservationCount = parseInt(room.Reservation.reservationCount || 0, 10);
-      const totalMinutes = parseInt(room.Reservation.totalMinutes || 0, 10);
+      const reservationCount = parseInt(room.reservationCount || 0, 10);
+      const totalMinutes = parseInt(room.totalMinutes || 0, 10);
       
       // Tính tỷ lệ sử dụng dựa trên tổng số phút trong khoảng thời gian
       const utilizationRate = totalMinutesInPeriod > 0
@@ -121,7 +107,7 @@ class ReportService {
         location: room.location,
         reservationCount,
         totalMinutes,
-        utilizationRate
+        utilizationRate: Math.round(utilizationRate)
       };
     });
     
@@ -267,18 +253,18 @@ class ReportService {
         {
           model: Reservation,
           attributes: [
-            [Sequelize.fn('COUNT', Sequelize.col('Reservations.id')), 'totalBookings'],
+            [Sequelize.fn('COUNT', Sequelize.col('Reservation.id')), 'totalBookings'],
             [
               Sequelize.fn(
                 'SUM', 
-                Sequelize.literal("CASE WHEN Reservations.status = 'completed' THEN 1 ELSE 0 END")
+                Sequelize.literal("CASE WHEN Reservation.status = 'completed' THEN 1 ELSE 0 END")
               ), 
               'completedBookings'
             ],
             [
               Sequelize.fn(
                 'SUM', 
-                Sequelize.literal("CASE WHEN Reservations.status = 'cancelled' THEN 1 ELSE 0 END")
+                Sequelize.literal("CASE WHEN Reservation.status = 'cancelled' THEN 1 ELSE 0 END")
               ), 
               'cancelledBookings'
             ]

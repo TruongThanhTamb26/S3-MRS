@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { DashNavbar } from "../components/DashNavbar";
 import { adminService } from "../services/admin.service";
-import { technicianService } from "../services/technician.service";
 
 interface Room {
   id: number;
@@ -175,40 +174,6 @@ const RoomManagement: React.FC = () => {
     } catch (err: any) {
       console.error("Error updating room status:", err);
       setError(err.message || "Đã xảy ra lỗi khi cập nhật trạng thái phòng");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Update room equipment
-  const handleUpdateEquipment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!currentRoom) return;
-    
-    setIsLoading(true);
-    setError("");
-    
-    try {
-      const response = await technicianService.updateDevicesByRoomId(
-        currentRoom.id,
-        currentRoom.equipment
-      );
-      
-      if (response.success) {
-        // Update rooms list with new equipment
-        const updatedRooms = rooms.map(room => 
-          room.id === currentRoom.id ? { ...room, equipment: currentRoom.equipment } : room
-        );
-        setRooms(updatedRooms);
-        setShowEquipmentModal(false);
-        setSuccess("Cập nhật thiết bị phòng thành công");
-      } else {
-        setError("Không thể cập nhật thiết bị phòng");
-      }
-    } catch (err: any) {
-      console.error("Error updating room equipment:", err);
-      setError(err.message || "Đã xảy ra lỗi khi cập nhật thiết bị phòng");
     } finally {
       setIsLoading(false);
     }
@@ -499,7 +464,7 @@ const RoomManagement: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(room.status)}`}>
                           {room.status === 'available' ? 'Khả dụng' : 
-                           room.status === 'unavailable' ? 'Không khả dụng' : 
+                           room.status === 'occupied' ? 'Không khả dụng' : 
                            room.status === 'maintenance' ? 'Đang bảo trì' : room.status}
                         </span>
                       </td>
@@ -512,15 +477,6 @@ const RoomManagement: React.FC = () => {
                           className="text-blue-600 hover:text-blue-900 mr-4"
                         >
                           Sửa
-                        </button>
-                        <button
-                          onClick={() => {
-                            setCurrentRoom(room);
-                            setShowEquipmentModal(true);
-                          }}
-                          className="text-green-600 hover:text-green-900 mr-4"
-                        >
-                          Thiết bị
                         </button>
                         <button
                           onClick={() => handleDeleteRoom(room.id)}
@@ -766,109 +722,7 @@ const RoomManagement: React.FC = () => {
             <div className="bg-white rounded-lg max-w-lg w-full">
               <div className="px-6 py-4 border-b">
                 <h3 className="text-lg font-medium text-gray-900">Quản lý thiết bị phòng {currentRoom.name}</h3>
-              </div>
-              
-              <form onSubmit={handleUpdateEquipment}>
-                <div className="px-6 py-4">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label htmlFor="equip-mic" className="block text-sm font-medium text-gray-700 mb-1">
-                        <span className="flex items-center">
-                          <span className="text-lg mr-1">🎤</span>
-                          Mic
-                        </span>
-                      </label>
-                      <input
-                        type="number"
-                        id="equip-mic"
-                        min="0"
-                        value={currentRoom.equipment.Mic}
-                        onChange={(e) => setCurrentRoom({
-                          ...currentRoom,
-                          equipment: {
-                            ...currentRoom.equipment,
-                            Mic: parseInt(e.target.value) || 0
-                          }
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="equip-projector" className="block text-sm font-medium text-gray-700 mb-1">
-                        <span className="flex items-center">
-                          <span className="text-lg mr-1">📽️</span>
-                          Máy chiếu
-                        </span>
-                      </label>
-                      <input
-                        type="number"
-                        id="equip-projector"
-                        min="0"
-                        value={currentRoom.equipment.Projector}
-                        onChange={(e) => setCurrentRoom({
-                          ...currentRoom,
-                          equipment: {
-                            ...currentRoom.equipment,
-                            Projector: parseInt(e.target.value) || 0
-                          }
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="equip-aircon" className="block text-sm font-medium text-gray-700 mb-1">
-                        <span className="flex items-center">
-                          <span className="text-lg mr-1">❄️</span>
-                          Điều hòa
-                        </span>
-                      </label>
-                      <input
-                        type="number"
-                        id="equip-aircon"
-                        min="0"
-                        value={currentRoom.equipment.AirCon}
-                        onChange={(e) => setCurrentRoom({
-                          ...currentRoom,
-                          equipment: {
-                            ...currentRoom.equipment,
-                            AirCon: parseInt(e.target.value) || 0
-                          }
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="px-6 py-4 bg-gray-50 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setShowEquipmentModal(false)}
-                    className="bg-white text-gray-700 px-4 py-2 rounded-md border border-gray-300 mr-2"
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center"
-                  >
-                    {isLoading ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Đang xử lý...
-                      </>
-                    ) : (
-                      'Cập nhật thiết bị'
-                    )}
-                  </button>
-                </div>
-              </form>
+              </div>  
             </div>
           </div>
         )}
