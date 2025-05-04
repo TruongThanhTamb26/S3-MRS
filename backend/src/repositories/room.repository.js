@@ -46,19 +46,33 @@ class RoomRepository {
 
   async findReservedRoomIds(startTime, endTime) {
     const { Reservation } = require('../models');
+    
+    // Add 1 minute buffer to startTime
+    const bufferedStartTime = new Date(startTime);
+    bufferedStartTime.setMinutes(bufferedStartTime.getMinutes() + 1);
+    
+    // Subtract 1 minute buffer from endTime
+    const bufferedEndTime = new Date(endTime);
+    bufferedEndTime.setMinutes(bufferedEndTime.getMinutes() - 1);
+    
+    // If after applying buffers, the time range becomes invalid
+    if (bufferedStartTime >= bufferedEndTime) {
+      return [];
+    }
+    
     const reservations = await Reservation.findAll({
       where: {
         [Op.or]: [
           {
-            startTime: { [Op.between]: [startTime, endTime] }
+            startTime: { [Op.between]: [bufferedStartTime, bufferedEndTime] }
           },
           {
-            endTime: { [Op.between]: [startTime, endTime] }
+            endTime: { [Op.between]: [bufferedStartTime, bufferedEndTime] }
           },
           {
             [Op.and]: [
-              { startTime: { [Op.lte]: startTime } },
-              { endTime: { [Op.gte]: endTime } }
+              { startTime: { [Op.lte]: bufferedStartTime } },
+              { endTime: { [Op.gte]: bufferedEndTime } }
             ]
           }
         ],

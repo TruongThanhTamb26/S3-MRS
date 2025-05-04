@@ -9,7 +9,7 @@ const LandingPage = () => {
       <header className="bg-white shadow-sm">
         <div className="container mx-auto flex justify-between items-center py-4 px-6">
           <div className="flex items-center gap-2 text-blue-600 font-bold text-lg">
-            <img src="/logo.jpg" alt="logo" className="w-8 h-8" />
+            <img src="/BACHKHOA.png" alt="logo" className="w-8 h-8" />
             BK SmartSpace
           </div>
           <nav className="hidden md:flex gap-6 text-sm text-gray-700">
@@ -75,7 +75,7 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="bg-gray-100 text-center text-sm text-gray-600 py-6 px-4 border-t">
         <div className="mb-4">
-          <img src="/logo.jpg" alt="logo" className="mx-auto w-10 h-10" />
+          <img src="/BACHKHOA.png" alt="logo" className="mx-auto w-10 h-10" />
           <p>Trường Đại Học Bách Khoa – 268 Lý Thường Kiệt, Quận 10, TP.HCM</p>
         </div>
         <div className="flex flex-col md:flex-row justify-center gap-8 mb-4">
