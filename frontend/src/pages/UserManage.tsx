@@ -563,13 +563,19 @@ const RoomManagement: React.FC = () => {
                       <p className="text-sm text-gray-600 mb-2">
                         Khi bạn đến phòng, hãy nhờ nhân viên quét mã QR để check-in.
                       </p>
+                      <p className="text-sm text-red-500">
+                        <strong>Lưu ý:</strong> Đặt phòng sẽ tự động bị hủy nếu không check-in trong vòng 30 phút sau giờ bắt đầu.
+                      </p>
                     </div>
                   )}
 
                   {canCheckOut(reservation) && (
                     <div className="mt-2 pt-2 border-t border-gray-100">
                       <p className="text-sm text-gray-600 mb-2">
-                        Khi bạn hoàn tất sử dụng phòng, hãy nhờ nhân viên quét mã QR để check-out.
+                        Khi kết thúc, hãy quét mã QR check-out để trả phòng.
+                      </p>
+                      <p className="text-sm text-yellow-600">
+                        <strong>Lưu ý:</strong> Hệ thống sẽ tự động check-out khi hết giờ đặt phòng.
                       </p>
                     </div>
                   )}

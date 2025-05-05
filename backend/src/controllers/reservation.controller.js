@@ -1,4 +1,5 @@
 const reservationService = require('../services/reservation.service');
+const schedulerService = require('../services/scheduler.service');
 
 class ReservationController {
   async createReservation(req, res) {
@@ -166,6 +167,25 @@ class ReservationController {
       });
     }
   }
+
+  async runScheduledTasks(req, res) {
+    try {
+      const result = await schedulerService.runAllTasks();
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Scheduled tasks executed successfully',
+        data: result
+      });
+    } catch (error) {
+      console.error('Error running scheduled tasks manually:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to run scheduled tasks',
+        error: error.message
+      });
+    }
+  };
 }
 
 module.exports = new ReservationController();

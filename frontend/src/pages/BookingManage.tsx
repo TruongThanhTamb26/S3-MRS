@@ -842,6 +842,9 @@ const BookingManagement: React.FC = () => {
                           <p className="text-sm text-gray-600 mb-2">
                             <span className="font-medium">Hướng dẫn:</span> Người dùng cần quét mã QR check-in ở trên để bắt đầu sử dụng phòng.
                           </p>
+                          <p className="text-sm text-red-500">
+                            <span className="font-medium">Chính sách:</span> Hệ thống sẽ tự động hủy đặt phòng nếu người dùng không check-in trong vòng 30 phút sau giờ bắt đầu.
+                          </p>
                         </div>
                         <div className="flex justify-end space-x-2">
                           <button
@@ -865,6 +868,9 @@ const BookingManagement: React.FC = () => {
                         <div className="border-t border-gray-200 pt-4 mb-2">
                           <p className="text-sm text-gray-600 mb-2">
                             <span className="font-medium">Hướng dẫn:</span> Người dùng cần quét mã QR check-out ở trên khi kết thúc sử dụng phòng.
+                          </p>
+                          <p className="text-sm text-yellow-500">
+                            <span className="font-medium">Chính sách:</span> Hệ thống sẽ tự động check-out khi hết thời gian đặt phòng.
                           </p>
                         </div>
                         <div className="flex justify-end space-x-2">

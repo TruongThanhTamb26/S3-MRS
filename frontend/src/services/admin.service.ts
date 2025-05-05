@@ -386,5 +386,21 @@ export const adminService = {
             const errorMessage = error.response?.data?.message || 'Không thể hủy đặt phòng';
             throw new Error(errorMessage);
         }
+    },
+
+    // Run scheduled tasks manually (for admin testing)
+    async runScheduledTasks(): Promise<GeneralResponse> {
+        try {
+            const response = await axios.post(`${API_URL}/reservations/scheduler/run`, {}, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getAuthHeader()
+                },
+            });
+            return response.data;
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || 'Không thể chạy tác vụ tự động';
+            throw new Error(errorMessage);
+        }
     }
 };

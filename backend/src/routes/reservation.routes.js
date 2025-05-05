@@ -15,7 +15,9 @@ router.delete('/:id', reservationController.cancelReservation);
 router.post('/:id/check-in', reservationController.checkIn);
 router.post('/:id/check-out', reservationController.checkOut);
 
+
 // Admin routes
 router.get('/', authMiddleware.isAdmin, reservationController.getAllReservations);
+router.post("/scheduler/run",authMiddleware.isAdmin, reservationController.runScheduledTasks);
 
 module.exports = router;

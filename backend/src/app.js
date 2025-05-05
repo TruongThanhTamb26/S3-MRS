@@ -5,6 +5,8 @@ const morgan = require('morgan');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const routes = require('./routes');
+const schedulerService = require('./services/scheduler.service');
+
 
 // Load environment variables
 dotenv.config();
@@ -12,6 +14,9 @@ dotenv.config();
 // Initialize express app
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Chạy scheduler mỗi 5 phút
+const SCHEDULER_INTERVAL = 5 * 60 * 1000; // 5 phút
 
 // Middlewares
 app.use(helmet()); // Security headers
@@ -46,3 +51,13 @@ syncModels().then(() => {
     console.log(`Server is running on port ${PORT}`);
   });
 });
+
+setInterval(async () => {
+  console.log('Running scheduled tasks...');
+  try {
+    const result = await schedulerService.runAllTasks();
+    console.log(`Auto tasks completed: cancelled ${result.cancelledCount}, checked-out ${result.checkedOutCount}`);
+  } catch (error) {
+    console.error('Error running scheduled tasks:', error);
+  }
+}, SCHEDULER_INTERVAL);
