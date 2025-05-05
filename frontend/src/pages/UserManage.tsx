@@ -3,6 +3,25 @@ import { useNavigate, useLocation } from "react-router-dom";
 import UserNavbar from "../components/UserNavbar";
 import { userService } from "../services/user.service";
 
+// Enum cho các loại thông báo
+enum NotificationType {
+  UPCOMING_RESERVATION = 'upcoming_reservation',
+  ENDING_RESERVATION = 'ending_reservation', 
+  RESERVATION_CHANGE = 'reservation_change',
+  MAINTENANCE = 'maintenance'
+}
+
+// Interface cho thông báo
+interface Notification {
+  id: number;
+  message: string;
+  time: string;
+  read: boolean;
+  reservationId?: number;
+  type: NotificationType;
+  details?: any; // Thông tin bổ sung cho mỗi loại thông báo
+}
+
 // Define reservation interface
 interface Reservation {
   id: number;

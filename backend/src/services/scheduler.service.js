@@ -1,7 +1,7 @@
+const ReservationService = require('./reservation.service');
+const RoomService = require('./room.service');
 const { Op } = require('sequelize');
-const db = require('../models');
-const Reservation = db.reservation;
-const Room = db.room;
+
 
 class SchedulerService {
   // Hủy đặt phòng nếu không check-in trong 30 phút
@@ -10,7 +10,7 @@ class SchedulerService {
     
     try {
       // Tìm các đặt phòng "confirmed" đã quá 30 phút so với thời gian bắt đầu
-      const overdueReservations = await Reservation.findAll({
+      const overdueReservations = await ReservationService.getAllReservations({
         where: {
           status: 'confirmed',
           startTime: {
@@ -19,8 +19,6 @@ class SchedulerService {
         }
       });
 
-      console.log(`Found ${overdueReservations.length} reservations to auto-cancel`);
-      
       // Cập nhật trạng thái thành cancelled
       for (const reservation of overdueReservations) {
         await reservation.update({
@@ -31,7 +29,7 @@ class SchedulerService {
         console.log(`Auto-cancelled reservation #${reservation.id}`);
         
         // Cập nhật trạng thái phòng nếu cần
-        const room = await Room.findByPk(reservation.roomId);
+        const room = await RoomService.getRoomById(reservation.roomId);
         if (room && room.status === 'occupied') {
           await room.update({ status: 'available' });
           console.log(`Updated room #${room.id} to available`);
@@ -51,7 +49,7 @@ class SchedulerService {
     
     try {
       // Tìm các đặt phòng "checked-in" đã quá thời gian kết thúc
-      const overdueCheckouts = await Reservation.findAll({
+      const overdueCheckouts = await ReservationService.getAllReservations({
         where: {
           status: 'checked-in',
           endTime: {
@@ -73,7 +71,7 @@ class SchedulerService {
         console.log(`Auto-checked-out reservation #${reservation.id}`);
         
         // Cập nhật trạng thái phòng
-        const room = await Room.findByPk(reservation.roomId);
+        const room = await RoomService.getRoomById(reservation.roomId);
         if (room) {
           await room.update({ status: 'available' });
           console.log(`Updated room #${room.id} to available`);
