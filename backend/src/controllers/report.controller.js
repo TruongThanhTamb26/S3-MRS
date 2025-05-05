@@ -12,9 +12,10 @@ class ReportController {
         });
       }
       
+      // Lấy báo cáo sử dụng chung
       const report = await reportService.generateUsageReport(startDate, endDate);
       
-      // Định dạng dữ liệu bookingsByStatus để trả về cho frontend
+      // Định dạng dữ liệu bookingsByStatus
       const bookingsByStatus = report.reservationsByStatus.map(item => ({
         status: item.status,
         count: parseInt(item.count, 10)
@@ -22,6 +23,21 @@ class ReportController {
       
       // Tạo phân bố theo giờ
       const timeDistribution = generateTimeDistribution(report.reservations || []);
+      
+      // Tạo phân bố theo ngày
+      const bookingStats = generateBookingStats(report.reservations || [], startDate, endDate);
+      
+      // Lấy báo cáo sử dụng phòng (đây là phần bị thiếu trước đây)
+      const roomUtilizationReport = await reportService.generateRoomUtilizationSummary(startDate, endDate);
+      
+      // Định dạng dữ liệu phòng
+      const roomUtilization = roomUtilizationReport.map(room => ({
+        id: room.id,
+        name: room.name,
+        bookings: parseInt(room.reservationCount, 10),
+        hours: Math.round(parseInt(room.totalMinutes, 10) / 60),
+        utilization: Math.round(room.utilizationRate)
+      }));
       
       res.status(200).json({
         success: true,
@@ -31,6 +47,8 @@ class ReportController {
           cancelledBookings: report.reservationsByStatus.find(item => item.status === 'cancelled')?.count || 0,
           bookingsByStatus,
           timeDistribution,
+          roomUtilization,       // Thêm vào đây
+          bookingStats,          // Thêm vào đây
           period: report.period
         }
       });
@@ -343,6 +361,36 @@ function generateTimeDistribution(reservations) {
     hour,
     bookings
   }));
+}
+
+/**
+ * Tạo dữ liệu phân bố theo ngày từ danh sách đặt phòng
+ */
+function generateBookingStats(reservations, startDateStr, endDateStr) {
+  const startDate = new Date(startDateStr);
+  const endDate = new Date(endDateStr);
+  const stats = [];
+  
+  // Tạo mảng chứa tất cả các ngày từ startDate đến endDate
+  const currentDate = new Date(startDate);
+  while (currentDate <= endDate) {
+    stats.push({
+      date: currentDate.toISOString().split('T')[0],
+      bookings: 0
+    });
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  // Đếm số lượng đặt phòng theo từng ngày
+  reservations.forEach(reservation => {
+    const bookingDate = new Date(reservation.startTime).toISOString().split('T')[0];
+    const statIndex = stats.findIndex(stat => stat.date === bookingDate);
+    if (statIndex !== -1) {
+      stats[statIndex].bookings++;
+    }
+  });
+  
+  return stats;
 }
 
 module.exports = new ReportController();

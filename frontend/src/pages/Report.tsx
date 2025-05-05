@@ -133,7 +133,6 @@ const AdminReport: React.FC = () => {
   // Translate booking status to Vietnamese
   const translateStatus = (status: string): string => {
     switch(status) {
-      case 'pending': return 'Chờ xác nhận';
       case 'confirmed': return 'Đã xác nhận';
       case 'checked-in': return 'Đang sử dụng';
       case 'completed': return 'Đã sử dụng';
@@ -192,16 +191,6 @@ const AdminReport: React.FC = () => {
       <DashNavbar />
       
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Báo Cáo Thống Kê</h1>
-          
-          <button 
-            onClick={handleExportCSV}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-          >
-            Xuất báo cáo CSV
-          </button>
-        </div>
         
         {/* Error message */}
         {error && (
@@ -241,16 +230,7 @@ const AdminReport: React.FC = () => {
               />
             </div>
           </div>
-          
-          <div className="mt-4 flex justify-end">
-            <button
-              onClick={fetchReportData}
-              disabled={isLoading}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-            >
-              {isLoading ? 'Đang tải...' : 'Cập nhật báo cáo'}
-            </button>
-          </div>
+        
         </div>
         
         {/* Tab Navigation */}

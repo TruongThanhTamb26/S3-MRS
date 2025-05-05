@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import api from '../services/api.service';
 
 interface UserNavbarProps {
@@ -56,18 +56,30 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ title = "S3-MRS" }) => {
           {title}
         </h1>
       </div>
-      <div className="flex gap-4 text-sm md:text-base">
+      
+      <div className="flex gap-4 items-center text-sm md:text-base">
         <button 
           onClick={() => navigate("/booking")}
           className={`hover:underline transition-colors ${isActive('/booking') ? 'font-bold' : ''}`}
         >
           Đặt chỗ
         </button>
+        
         <button
           onClick={() => navigate("/manage")}
           className={`hover:underline transition-colors ${isActive('/manage') ? 'font-bold' : ''}`}
         >
           Quản lý đặt chỗ
+        </button>
+        
+        <button
+          onClick={() => navigate("/qr-scanner")}
+          className={`hover:underline transition-colors flex items-center ${isActive('/qr-scanner') ? 'font-bold' : ''}`}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v-4m6 0H4" />
+          </svg>
+          QR Scanner
         </button>
         
         {/* Profile dropdown */}

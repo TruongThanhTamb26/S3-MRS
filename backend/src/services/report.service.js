@@ -304,7 +304,7 @@ class ReportService {
     // Số lượng đặt phòng mới
     const pendingReservations = await Reservation.count({
       where: {
-        status: 'pending'
+        status: 'confirmed',
       }
     });
     

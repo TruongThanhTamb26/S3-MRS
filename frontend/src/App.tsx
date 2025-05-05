@@ -15,6 +15,7 @@ import BookingConfirm from "./pages/BookingConfirm";
 import ManageUser from "./pages/ManageUser";
 import AdminProfile from "./pages/AdminProfile";
 import TechnicianProfile from "./pages/TechnicianProfile";
+import UserQRScanner from "./pages/UserQRScanner";
 import "./styles/tailwind.css";
 
 const App = () => (
@@ -48,6 +49,7 @@ const App = () => (
         <Route path="/booking" element={<Booking />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/manage" element={<Manage />} />
+        <Route path="/qr-scanner" element={<UserQRScanner />} />
       </Route>
       
       {/* Fallback route - chuyển hướng về trang chủ */}

@@ -248,7 +248,7 @@ const RoomManagement: React.FC = () => {
     switch(status) {
       case 'available':
         return 'bg-green-100 text-green-800';
-      case 'unavailable':
+      case 'occupied':
         return 'bg-red-100 text-red-800';
       case 'maintenance':
         return 'bg-yellow-100 text-yellow-800';
@@ -381,7 +381,7 @@ const RoomManagement: React.FC = () => {
               >
                 <option value="all">Tất cả</option>
                 <option value="available">Khả dụng</option>
-                <option value="unavailable">Không khả dụng</option>
+                <option value="occupied">Không khả dụng</option>
                 <option value="maintenance">Đang bảo trì</option>
               </select>
             </div>
@@ -679,7 +679,7 @@ const RoomManagement: React.FC = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
                     >
                       <option value="available">Khả dụng</option>
-                      <option value="unavailable">Không khả dụng</option>
+                      <option value="occupied">Không khả dụng</option>
                       <option value="maintenance">Đang bảo trì</option>
                     </select>
                   </div>

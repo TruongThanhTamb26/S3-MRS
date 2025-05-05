@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { DashNavbar } from "../components/DashNavbar";
 import { adminService } from "../services/admin.service";
 import { userService } from "../services/user.service";
+import QRCodeGenerator from '../components/QRCodeGenerator';
 
 interface Equipment {
   Mic: number;
@@ -365,8 +366,6 @@ const BookingManagement: React.FC = () => {
   // Get status badge
   const getStatusBadge = (status: string) => {
     switch(status) {
-      case 'pending':
-        return <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Chờ xác nhận</span>;
       case 'confirmed':
         return <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Đã xác nhận</span>;
       case 'checked-in':
@@ -627,42 +626,27 @@ const BookingManagement: React.FC = () => {
                               Chi tiết
                             </button>
                             
-                            {reservation.status === 'pending' && (
-                              <>
-                                <button 
-                                  onClick={() => handleApproveReservation(reservation.id)}
-                                  disabled={actionLoading === reservation.id}
-                                  className={`text-green-600 hover:text-green-900 ${actionLoading === reservation.id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                >
-                                  {actionLoading === reservation.id ? 'Đang xử lý...' : 'Xác nhận'}
-                                </button>
-                                <button 
-                                  onClick={() => handleRejectReservation(reservation.id)}
-                                  disabled={actionLoading === reservation.id}
-                                  className={`text-red-600 hover:text-red-900 ${actionLoading === reservation.id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                >
-                                  {actionLoading === reservation.id ? 'Đang xử lý...' : 'Từ chối'}
-                                </button>
-                              </>
-                            )}
-                            
                             {reservation.status === 'confirmed' && (
                               <button 
-                                onClick={() => handleCheckIn(reservation.id)}
-                                disabled={actionLoading === reservation.id}
-                                className={`text-blue-600 hover:text-blue-900 ${actionLoading === reservation.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                onClick={() => openDetailsModal(reservation)}
+                                className="text-blue-600 hover:text-blue-900 flex items-center"
                               >
-                                {actionLoading === reservation.id ? 'Đang xử lý...' : 'Check-in'}
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v-4m6 0H4" />
+                                </svg>
+                                Mã QR Check-in
                               </button>
                             )}
                             
                             {reservation.status === 'checked-in' && (
                               <button 
-                                onClick={() => handleCheckOut(reservation.id)}
-                                disabled={actionLoading === reservation.id}
-                                className={`text-blue-600 hover:text-blue-900 ${actionLoading === reservation.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                onClick={() => openDetailsModal(reservation)}
+                                className="text-blue-600 hover:text-blue-900 flex items-center"
                               >
-                                {actionLoading === reservation.id ? 'Đang xử lý...' : 'Check-out'}
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v-4m6 0H4" />
+                                </svg>
+                                Mã QR Check-out
                               </button>
                             )}
                           </div>
@@ -679,178 +663,231 @@ const BookingManagement: React.FC = () => {
       
       {/* Reservation details modal */}
       {showDetailsModal && currentReservation && (
-        <div className="fixed inset-0 z-10 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-            
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-800">
+                  Chi tiết đặt phòng #{currentReservation.id}
+                </h2>
+                <button 
+                  onClick={() => setShowDetailsModal(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
               {detailsLoading ? (
-                <div className="bg-white p-8 flex justify-center items-center">
+                <div className="flex justify-center my-12">
                   <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                 </div>
               ) : (
                 <>
-                  <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <div className="sm:flex sm:items-start">
-                      <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">
-                          Chi tiết đặt phòng #{currentReservation.id}
-                        </h3>
-                        
-                        <div className="mt-4 border-t border-gray-200 pt-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-sm font-medium text-gray-500">Phòng</p>
-                              <p className="mt-1 text-sm text-gray-900">
-                                {currentReservation.room?.name || `Phòng #${currentReservation.roomId}`}
-                              </p>
-                            </div>
-                            
-                            <div>
-                              <p className="text-sm font-medium text-gray-500">Vị trí</p>
-                              <p className="mt-1 text-sm text-gray-900">
-                                {currentReservation.room?.location || 'Không có thông tin'}
-                              </p>
-                            </div>
-                            
-                            <div>
-                              <p className="text-sm font-medium text-gray-500">Sức chứa</p>
-                              <p className="mt-1 text-sm text-gray-900">
-                                {currentReservation.room?.capacity || 'Không có thông tin'} người
-                              </p>
-                            </div>
-                            
-                            <div>
-                              <p className="text-sm font-medium text-gray-500">Trang thiết bị</p>
-                              {renderEquipment(currentReservation.room?.equipment)}
-                            </div>
-                          </div>
-                          
-                          <div className="mt-4 border-t border-gray-200 pt-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div>
-                                <p className="text-sm font-medium text-gray-500">Người đặt</p>
-                                <p className="mt-1 text-sm text-gray-900">
-                                  {currentReservation.user?.fullName || `Người dùng #${currentReservation.userId}`}
-                                </p>
-                              </div>
-                              
-                              <div>
-                                <p className="text-sm font-medium text-gray-500">Email</p>
-                                <p className="mt-1 text-sm text-gray-900">
-                                  {currentReservation.user?.email || 'Không có thông tin'}
-                                </p>
-                              </div>
-                              
-                              <div>
-                                <p className="text-sm font-medium text-gray-500">Vai trò</p>
-                                <p className="mt-1 text-sm text-gray-900">
-                                  {currentReservation.user?.role === 'admin' ? 'Quản trị viên' :
-                                  currentReservation.user?.role === 'technician' ? 'Kỹ thuật viên' : 'Người dùng'}
-                                </p>
-                              </div>
-                              
-                              <div>
-                                <p className="text-sm font-medium text-gray-500">Tên đăng nhập</p>
-                                <p className="mt-1 text-sm text-gray-900">
-                                  {currentReservation.user?.username || 'Không có thông tin'}
-                                </p>
-                              </div>
-                              
-                              <div>
-                                <p className="text-sm font-medium text-gray-500">Ngày đặt</p>
-                                <p className="mt-1 text-sm text-gray-900">
-                                  {formatDate(currentReservation.startTime)}
-                                </p>
-                              </div>
-                              
-                              <div>
-                                <p className="text-sm font-medium text-gray-500">Thời gian</p>
-                                <p className="mt-1 text-sm text-gray-900">
-                                  {formatTime(currentReservation.startTime)} - {formatTime(currentReservation.endTime)}
-                                </p>
-                              </div>
-                              
-                              <div>
-                                <p className="text-sm font-medium text-gray-500">Trạng thái</p>
-                                <div className="mt-1">
-                                  {getStatusBadge(currentReservation.status)}
-                                </div>
-                              </div>
-                              
-                              <div>
-                                <p className="text-sm font-medium text-gray-500">Ngày tạo</p>
-                                <p className="mt-1 text-sm text-gray-900">
-                                  {formatDate(currentReservation.createdAt)} {formatTime(currentReservation.createdAt)}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    {/* Booking Info */}
+                    <div className="bg-gray-50 p-4 rounded-md">
+                      <h3 className="font-medium text-gray-700 mb-2">Thông tin đặt phòng</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">ID:</span>
+                          <span className="font-medium">{currentReservation.id}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Ngày tạo:</span>
+                          <span className="font-medium">
+                            {new Date(currentReservation.createdAt).toLocaleString('vi-VN')}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Trạng thái:</span>
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            {
+                              'confirmed': 'bg-blue-100 text-blue-800',
+                              'cancelled': 'bg-red-100 text-red-800',
+                              'rejected': 'bg-red-100 text-red-800',
+                              'checked-in': 'bg-green-100 text-green-800',
+                              'completed': 'bg-gray-100 text-gray-800'
+                            }[currentReservation.status] || 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {
+                              {
+                                'confirmed': 'Đã xác nhận',
+                                'cancelled': 'Đã hủy',
+                                'rejected': 'Bị từ chối',
+                                'checked-in': 'Đang sử dụng',
+                                'completed': 'Hoàn thành'
+                              }[currentReservation.status] || currentReservation.status
+                            }
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Room Info */}
+                    <div className="bg-gray-50 p-4 rounded-md">
+                      <h3 className="font-medium text-gray-700 mb-2">Thông tin phòng</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Phòng:</span>
+                          <span className="font-medium">
+                            {currentReservation.room?.name || `Phòng #${currentReservation.roomId}`}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Cơ sở:</span>
+                          <span className="font-medium">
+                            {currentReservation.room?.location || 'N/A'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Sức chứa:</span>
+                          <span className="font-medium">
+                            {currentReservation.room?.capacity || 'N/A'} người
+                          </span>
                         </div>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    {currentReservation.status === 'pending' && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            handleApproveReservation(currentReservation.id);
-                            setShowDetailsModal(false);
-                          }}
-                          className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
-                        >
-                          Xác nhận
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            handleRejectReservation(currentReservation.id);
-                            setShowDetailsModal(false);
-                          }}
-                          className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                        >
-                          Từ chối
-                        </button>
-                      </>
-                    )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    {/* User Info */}
+                    <div className="bg-gray-50 p-4 rounded-md">
+                      <h3 className="font-medium text-gray-700 mb-2">Thông tin người đặt</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Họ tên:</span>
+                          <span className="font-medium">
+                            {currentReservation.user?.fullName || `User #${currentReservation.userId}`}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Email:</span>
+                          <span className="font-medium">
+                            {currentReservation.user?.email || 'N/A'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Vai trò:</span>
+                          <span className="font-medium">
+                            {currentReservation.user?.role === 'student' ? 'Sinh viên' : 
+                            currentReservation.user?.role === 'admin' ? 'Quản trị viên' : 
+                            currentReservation.user?.role === 'technician' ? 'Kỹ thuật viên' : 
+                            currentReservation.user?.role || 'N/A'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Time Info */}
+                    <div className="bg-gray-50 p-4 rounded-md">
+                      <h3 className="font-medium text-gray-700 mb-2">Thời gian sử dụng</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Ngày:</span>
+                          <span className="font-medium">
+                            {formatDate(currentReservation.startTime)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Bắt đầu:</span>
+                          <span className="font-medium">
+                            {formatTime(currentReservation.startTime)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Kết thúc:</span>
+                          <span className="font-medium">
+                            {formatTime(currentReservation.endTime)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Equipment section */}
+                  <div className="bg-gray-50 p-4 rounded-md mb-6">
+                    <h3 className="font-medium text-gray-700 mb-2">Trang thiết bị</h3>
+                    <div className="text-sm text-gray-800">
+                      {renderEquipment(currentReservation.room?.equipment)}
+                    </div>
+                  </div>
+                  
+                  {/* QR Code section */}
+                  {(currentReservation.status === 'confirmed' || currentReservation.status === 'checked-in') && (
+                    <div className="bg-gray-50 p-4 rounded-md mb-6">
+                      <h3 className="font-medium text-gray-700 mb-2">
+                        {currentReservation.status === 'confirmed' ? 'Mã QR Check-in' : 'Mã QR Check-out'}
+                      </h3>
+                      <div className="flex justify-center py-2">
+                        <QRCodeGenerator 
+                          reservationId={currentReservation.id} 
+                          action={currentReservation.status === 'confirmed' ? 'check-in' : 'check-out'} 
+                        />
+                      </div>
+                      <p className="text-sm text-gray-500 text-center mt-2">
+                        Quét mã QR này để {currentReservation.status === 'confirmed' ? 'checked-in' : 'check-out'} đặt phòng
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Actions */}
+                  <div className="flex flex-wrap justify-end space-x-2 gap-y-2">
                     
                     {currentReservation.status === 'confirmed' && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleCheckIn(currentReservation.id);
-                          setShowDetailsModal(false);
-                        }}
-                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-                      >
-                        Check-in
-                      </button>
+                      <div className="flex flex-col w-full mb-4">
+                        <div className="border-t border-gray-200 pt-4 mb-2">
+                          <p className="text-sm text-gray-600 mb-2">
+                            <span className="font-medium">Hướng dẫn:</span> Người dùng cần quét mã QR check-in ở trên để bắt đầu sử dụng phòng.
+                          </p>
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              // Admin vẫn có thể check-in thủ công nếu cần
+                              handleCheckIn(currentReservation.id);
+                              setShowDetailsModal(false);
+                            }}
+                            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                            disabled={actionLoading === currentReservation.id}
+                          >
+                            {actionLoading === currentReservation.id ? 'Đang xử lý...' : 'Check-in thủ công'}
+                          </button>
+                        </div>
+                      </div>
                     )}
                     
                     {currentReservation.status === 'checked-in' && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleCheckOut(currentReservation.id);
-                          setShowDetailsModal(false);
-                        }}
-                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-                      >
-                        Check-out
-                      </button>
+                      <div className="flex flex-col w-full mb-4">
+                        <div className="border-t border-gray-200 pt-4 mb-2">
+                          <p className="text-sm text-gray-600 mb-2">
+                            <span className="font-medium">Hướng dẫn:</span> Người dùng cần quét mã QR check-out ở trên khi kết thúc sử dụng phòng.
+                          </p>
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              // Admin vẫn có thể check-out thủ công nếu cần
+                              handleCheckOut(currentReservation.id);
+                              setShowDetailsModal(false);
+                            }}
+                            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                            disabled={actionLoading === currentReservation.id}
+                          >
+                            {actionLoading === currentReservation.id ? 'Đang xử lý...' : 'Check-out thủ công'}
+                          </button>
+                        </div>
+                      </div>
                     )}
                     
+                    {/* Nút đóng modal luôn hiển thị */}
                     <button
-                      type="button"
                       onClick={() => setShowDetailsModal(false)}
-                      className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                      className="px-4 py-2 bg-gray-100 text-gray-800 rounded hover:bg-gray-200"
                     >
                       Đóng
                     </button>

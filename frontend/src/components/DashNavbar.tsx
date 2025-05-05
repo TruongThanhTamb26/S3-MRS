@@ -110,9 +110,6 @@ export const DashNavbar: React.FC = () => {
                     <Link to="/admin/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                       Hồ sơ
                     </Link>
-                    <Link to="/admin/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Cài đặt
-                    </Link>
                     <button
                       onClick={handleLogout}
                       className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -195,9 +192,6 @@ export const DashNavbar: React.FC = () => {
             <div className="mt-3 px-2 space-y-1">
               <Link to="/admin/profile" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-blue-800 hover:text-white">
                 Hồ sơ
-              </Link>
-              <Link to="/admin/settings" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-blue-800 hover:text-white">
-                Cài đặt
               </Link>
               <button
                 onClick={handleLogout}

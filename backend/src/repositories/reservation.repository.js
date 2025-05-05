@@ -60,15 +60,19 @@ class ReservationRepository {
   }
 
   async findOverlapping(roomId, startTime, endTime, excludeId = null) {
+    const adjustedStartTime = new Date(startTime);
+    adjustedStartTime.setMinutes(adjustedStartTime.getMinutes() + 1);
+    const adjustedEndTime = new Date(endTime);
+    adjustedEndTime.setMinutes(adjustedEndTime.getMinutes() - 1);
     const where = {
       roomId,
       [Op.or]: [
-        { startTime: { [Op.between]: [startTime, endTime] } },
-        { endTime: { [Op.between]: [startTime, endTime] } },
+        { startTime: { [Op.between]: [adjustedStartTime, adjustedEndTime] } },
+        { endTime: { [Op.between]: [adjustedStartTime, adjustedEndTime] } },
         {
           [Op.and]: [
-            { startTime: { [Op.lte]: startTime } },
-            { endTime: { [Op.gte]: endTime } }
+            { startTime: { [Op.lte]: adjustedStartTime } },
+            { endTime: { [Op.gte]: adjustedEndTime } }
           ]
         }
       ],
@@ -93,7 +97,7 @@ class ReservationRepository {
     if (!reservation) return null;
     return await reservation.update({
       checkInTime: new Date(),
-      status: 'confirmed'
+      status: 'checked-in'
     });
   }
 

@@ -254,5 +254,21 @@ export const userService = {
             const errorMessage = error.response?.data?.message || 'Không thể tải thông tin phòng';
             throw new Error(errorMessage);
         }
-    }
+    },
+
+    // Thêm phương thức này vào userService
+    getAllRooms: async (minCapacity?: number): Promise<any> => {
+        try {
+            const params: any = {};
+            if (minCapacity && minCapacity > 1) {
+                params.minCapacity = minCapacity;
+            }
+            
+            const response = await axios.get('/rooms', { params });
+            return response.data;
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || 'Không thể tải thông tin phòng';
+            throw new Error(errorMessage);
+        }
+    },
 };

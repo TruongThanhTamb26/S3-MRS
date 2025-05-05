@@ -143,7 +143,7 @@ const RoomManagement: React.FC = () => {
               ['completed', 'cancelled'].includes(res.status)
             )
           : reservationsWithRoomDetails.filter(res => 
-              ['pending', 'confirmed', 'checked-in'].includes(res.status)
+              ['confirmed', 'checked-in'].includes(res.status)
             );
         
         setReservations(filteredByHistory);
@@ -243,10 +243,6 @@ const RoomManagement: React.FC = () => {
       return <span className="bg-gray-500 text-white text-xs px-2 py-1 rounded-full">Đã sử dụng</span>;
     }
     
-    if (status === 'pending') {
-      return <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">Chờ xác nhận</span>;
-    }
-    
     if (status === 'confirmed') {
       return <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">Đã xác nhận</span>;
     }
@@ -317,6 +313,19 @@ const RoomManagement: React.FC = () => {
 
       {/* Content */}
       <div className="flex-grow px-4 py-8 max-w-6xl mx-auto w-full">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-blue-800">Quản lý đặt phòng</h1>
+          <button
+            onClick={() => navigate('/qr-scanner')}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md flex items-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Quét mã QR
+          </button>
+        </div>
+
         <h2 className="text-2xl font-bold text-blue-800 mb-6 text-center">
           QUẢN LÝ ĐẶT CHỖ
         </h2>
@@ -509,7 +518,7 @@ const RoomManagement: React.FC = () => {
                   {/* Action buttons */}
                   <div className="mt-4 pt-3 border-t border-gray-100 flex justify-end gap-2">
                     {/* Cancel button */}
-                    {!viewHistory && (reservation.status === 'pending' || reservation.status === 'confirmed') && (
+                    {!viewHistory && (reservation.status === 'confirmed') && (
                       <button
                         onClick={() => handleCancelReservation(reservation.id)}
                         disabled={actionLoading === reservation.id}
@@ -531,43 +540,39 @@ const RoomManagement: React.FC = () => {
                     {/* Check-in button */}
                     {canCheckIn(reservation) && (
                       <button
-                        onClick={() => handleCheckIn(reservation.id)}
-                        disabled={actionLoading === reservation.id}
-                        className={`bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm ${
-                          actionLoading === reservation.id ? "opacity-50 cursor-not-allowed" : ""
-                        }`}
+                      onClick={() => navigate('/qr-scanner', { state: { action: 'check-in', reservationId: reservation.id } })}
+                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
                       >
-                        {actionLoading === reservation.id ? (
-                          <div className="flex items-center">
-                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
-                            <span>Đang xử lý...</span>
-                          </div>
-                        ) : (
-                          "Check-in"
-                        )}
+                      Check-in
                       </button>
                     )}
                     
                     {/* Check-out button */}
                     {canCheckOut(reservation) && (
                       <button
-                        onClick={() => handleCheckOut(reservation.id)}
-                        disabled={actionLoading === reservation.id}
-                        className={`bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm ${
-                          actionLoading === reservation.id ? "opacity-50 cursor-not-allowed" : ""
-                        }`}
+                      onClick={() => navigate('/qr-scanner', { state: { action: 'check-out', reservationId: reservation.id } })}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
                       >
-                        {actionLoading === reservation.id ? (
-                          <div className="flex items-center">
-                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
-                            <span>Đang xử lý...</span>
-                          </div>
-                        ) : (
-                          "Check-out"
-                        )}
+                      Check-out
                       </button>
                     )}
                   </div>
+                  {/* Check-in/Check-out buttons */}
+                  {canCheckIn(reservation) && (
+                    <div className="mt-2 pt-2 border-t border-gray-100">
+                      <p className="text-sm text-gray-600 mb-2">
+                        Khi bạn đến phòng, hãy nhờ nhân viên quét mã QR để check-in.
+                      </p>
+                    </div>
+                  )}
+
+                  {canCheckOut(reservation) && (
+                    <div className="mt-2 pt-2 border-t border-gray-100">
+                      <p className="text-sm text-gray-600 mb-2">
+                        Khi bạn hoàn tất sử dụng phòng, hãy nhờ nhân viên quét mã QR để check-out.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
