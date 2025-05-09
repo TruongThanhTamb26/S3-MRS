@@ -1,38 +1,43 @@
 const ReservationService = require('./reservation.service');
 const RoomService = require('./room.service');
+const models = require('../models');
 const { Op } = require('sequelize');
+
 
 
 class SchedulerService {
   // Hủy đặt phòng nếu không check-in trong 30 phút
   async cancelMissedCheckins() {
     const now = new Date();
-    
+    const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60000);
+
     try {
-      // Tìm các đặt phòng "confirmed" đã quá 30 phút so với thời gian bắt đầu
-      const overdueReservations = await ReservationService.getAllReservations({
-        where: {
-          status: 'confirmed',
-          startTime: {
-            [Op.lt]: new Date(now.getTime() - 30 * 60000) // 30 phút trước hiện tại
-          }
+      // Sử dụng phương thức mới để lấy các đặt phòng quá hạn check-in
+      const overdueReservations = await ReservationService.getReservationsByStatusAndStartTime(
+        'confirmed',
+        null,  // Không cần startTimeFrom
+        thirtyMinutesAgo,  // Lấy những đặt phòng đã bắt đầu cách đây hơn 30 phút
+        {
+          include: [{ model: models.Room, as: 'room' }]
         }
-      });
+      );
 
       // Cập nhật trạng thái thành cancelled
       for (const reservation of overdueReservations) {
-        await reservation.update({
+        // Cập nhật trạng thái reservation
+        await ReservationService.updateReservation(reservation.id, {
           status: 'cancelled',
-          notes: reservation.notes + "\nTự động hủy do không check-in trong 30 phút sau giờ bắt đầu."
+          notes: (reservation.notes ? reservation.notes + "\n" : "") + "Tự động hủy do không check-in trong 30 phút sau giờ bắt đầu."
         });
         
-        console.log(`Auto-cancelled reservation #${reservation.id}`);
         
         // Cập nhật trạng thái phòng nếu cần
-        const room = await RoomService.getRoomById(reservation.roomId);
-        if (room && room.status === 'occupied') {
-          await room.update({ status: 'available' });
-          console.log(`Updated room #${room.id} to available`);
+        if (reservation.roomId) {
+          const room = await RoomService.getRoomById(reservation.roomId);
+          if (room && room.status === 'occupied') {
+            await RoomService.updateRoom(room.id, { status: 'available' });
+            console.log(`Updated room #${room.id} to available`);
+          }
         }
       }
       
@@ -45,36 +50,29 @@ class SchedulerService {
 
   // Tự động check-out các đặt phòng đã quá giờ kết thúc
   async autoCheckout() {
-    const now = new Date();
-    
     try {
-      // Tìm các đặt phòng "checked-in" đã quá thời gian kết thúc
-      const overdueCheckouts = await ReservationService.getAllReservations({
-        where: {
-          status: 'checked-in',
-          endTime: {
-            [Op.lt]: now
-          }
-        }
+      // Sử dụng phương thức mới để lấy các đặt phòng cần tự động check-out
+      const overdueCheckouts = await ReservationService.getOverdueCheckedInReservations({
+        include: [{ model: models.Room, as: 'room' }]
       });
-
+  
       console.log(`Found ${overdueCheckouts.length} reservations to auto-checkout`);
       
       // Cập nhật trạng thái thành completed
       for (const reservation of overdueCheckouts) {
-        await reservation.update({
+        // Sử dụng service để cập nhật
+        await ReservationService.updateReservation(reservation.id, {
           status: 'completed',
-          checkOutTime: now,
-          notes: reservation.notes + "\nTự động check-out khi kết thúc thời gian."
+          checkOutTime: new Date(),
+          notes: (reservation.notes ? reservation.notes + "\n" : "") + "Tự động check-out khi kết thúc thời gian."
         });
         
         console.log(`Auto-checked-out reservation #${reservation.id}`);
         
         // Cập nhật trạng thái phòng
-        const room = await RoomService.getRoomById(reservation.roomId);
-        if (room) {
-          await room.update({ status: 'available' });
-          console.log(`Updated room #${room.id} to available`);
+        if (reservation.roomId) {
+          await RoomService.updateRoom(reservation.roomId, { status: 'available' });
+          console.log(`Updated room #${reservation.roomId} to available`);
         }
       }
       
@@ -85,7 +83,7 @@ class SchedulerService {
     }
   }
 
-  // Chạy tất cả các công việc tự động
+  // Phần còn lại của mã giữ nguyên
   async runAllTasks() {
     try {
       const cancelledCount = await this.cancelMissedCheckins();

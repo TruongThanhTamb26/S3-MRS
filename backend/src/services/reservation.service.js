@@ -204,6 +204,61 @@ class ReservationService {
     
     return await reservationRepository.findAll(options);
   }
+  
+  async getReservationsByStatusAndStartTime(status, startTimeFrom, startTimeTo, options = {}) {
+    try {
+      const query = {
+        where: {
+          status: status
+        },
+        ...options
+      };
+      
+      // Nếu có startTimeFrom và startTimeTo, thêm điều kiện lọc theo thời gian bắt đầu
+      if (startTimeFrom || startTimeTo) {
+        query.where.startTime = {};
+        
+        if (startTimeFrom) {
+          query.where.startTime[Op.gte] = startTimeFrom;
+        }
+        
+        if (startTimeTo) {
+          query.where.startTime[Op.lte] = startTimeTo;
+        }
+      }
+      
+      // Thực hiện truy vấn với điều kiện đã xây dựng
+      const reservations = await Reservation.findAll(query);
+      return reservations;
+    } catch (error) {
+      console.error('Error getting reservations by status and start time:', error);
+      throw error;
+    }
+  }
+
+  async getOverdueCheckedInReservations(options = {}) {
+    try {
+      const now = new Date();
+      
+      const query = {
+        where: {
+          status: 'checked-in',
+          endTime: {
+            [Op.lt]: now // Lấy những phòng có thời gian kết thúc trước thời điểm hiện tại
+          }
+        },
+        ...options
+      };
+      
+      // Thực hiện truy vấn với điều kiện đã xây dựng
+      const reservations = await reservationRepository.findAll(query);
+      return reservations;
+    } catch (error) {
+      console.error('Error getting overdue checked-in reservations:', error);
+      throw error;
+    }
+  }
+
 }
 
 module.exports = new ReservationService();

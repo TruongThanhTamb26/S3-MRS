@@ -171,7 +171,6 @@ class ReservationController {
   async runScheduledTasks(req, res) {
     try {
       const result = await schedulerService.runAllTasks();
-      
       return res.status(200).json({
         success: true,
         message: 'Scheduled tasks executed successfully',
