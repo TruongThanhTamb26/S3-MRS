@@ -1,49 +1,127 @@
-# S3-MRS Smart Study Space Management and Reservation System
-Dự án xây dựng hệ thống cho phép sinh viên/giảng viên đặt chỗ phòng học cá nhân/nhóm, cập nhật trạng thái phòng (trống/đang dùng), hệ thống nhắc nhở, xác thực tập trung HCMUT_SSO, và cung cấp báo cáo thống kê cho Ban quản lý.
+# S3-MRS: Smart Study Space Management and Reservation System
 
-**Tính năng chính**
+## Tổng quan (Overview)
 
-Đặt chỗ phòng:
-Tra cứu phòng trống, đặt giờ, hủy/sửa đặt chỗ, check-in bằng QR code.
+S3-MRS là hệ thống quản lý và đặt phòng học thông minh, cho phép sinh viên và giảng viên dễ dàng đặt chỗ phòng học cá nhân/nhóm, theo dõi trạng thái phòng học theo thời gian thực, check-in/check-out qua mã QR, và cung cấp báo cáo thống kê chi tiết cho ban quản lý.
 
-Quản lý phòng:
-Thêm/sửa/xóa phòng, cập nhật thông tin thiết bị, trạng thái phòng, v.v.
+_S3-MRS is a smart study space management and reservation system that allows students and lecturers to easily book individual/group study rooms, monitor real-time room status, check-in/check-out via QR codes, and provides detailed statistical reports for administrators._
 
-Xác thực tập trung HCMUT_SSO:
-Đăng nhập single-sign-on, phân quyền người dùng (sinh viên, admin, kỹ thuật,…).
+## Tính năng chính (Key Features)
 
-Báo cáo & Thống kê:
-Thống kê lượt đặt, tần suất sử dụng, báo cáo dạng bảng/biểu đồ.
+### Dành cho Sinh viên - Giảng viên
 
-**Công nghệ chính:**
+- **Đặt chỗ phòng học**: Tìm kiếm và đặt phòng trống theo khung giờ, kiểm tra trùng lịch
+- **Quản lý đặt phòng**: Xem danh sách, hủy, hoặc chỉnh sửa đặt phòng
+- **Check-in/Check-out**: Quét mã QR hoặc thực hiện qua ứng dụng
+- **Nhận thông báo**: Nhắc nhở trước giờ sử dụng, thông báo khi sắp hết giờ
+- **Tự động hủy phòng**: Hệ thống tự động hủy nếu không check-in sau 30 phút
 
-Backend:
+### Dành cho Ban quản lý
 
-Frontend:
+- **Quản lý phòng học**: Thêm, xóa, cập nhật thông tin phòng và thiết bị
+- **Báo cáo thống kê**: Phân tích lượt đặt, tỷ lệ sử dụng, khung giờ cao điểm
+- **Quản lý quyền đặt phòng**: Phân quyền, ưu tiên cho các nhóm người dùng
+- **Quản lý đặt phòng**: Tìm kiếm, lọc, cưỡng chế hủy đặt phòng
 
-Database:
+### Dành cho IT và Kỹ thuật viên
 
-Xác thực: Tích hợp HCMUT_SSO (OAuth2/OpenID).
+- **Quản lý tài khoản**: Tạo/sửa/xóa tài khoản nội bộ, phân quyền
+- **Giám sát hệ thống**: Theo dõi trạng thái thiết bị, cảnh báo lỗi
 
-**Cấu trúc thư mục**
+## Công nghệ sử dụng (Technology Stack)
 
+### Backend
 
+- **Node.js** + **Express.js**: RESTful API framework
+- **Sequelize ORM**: Tương tác với cơ sở dữ liệu
+- **JWT**: Xác thực và phân quyền người dùng
+- **Scheduler**: Tự động hóa các tác vụ (hủy đặt phòng, check-out)
 
-**Thông tin nhóm phát triển**
+### Frontend
 
-Giảng viên hướng dẫn: Trần Trương Tuấn Phát
+- **React**: Xây dựng giao diện người dùng
+- **TypeScript**: Đảm bảo type-safety
+- **Tailwind CSS**: Styling framework
+- **Recharts**: Hiển thị biểu đồ, báo cáo thống kê
+- **Vite**: Công cụ build hiệu suất cao
 
-Nhóm:
+### Database
 
-Doãn Phương Hùng Cường - 2310381
+- **MySQL**: Hệ quản trị cơ sở dữ liệu quan hệ
 
-Nguyễn Thanh Liêm - 2111637
+### Xác thực (Authentication)
 
-Nguyễn Tiến Đăng Khoa - 1832026
+- **HCMUT_SSO**: Single Sign-On tích hợp hệ thống của trường
+- **OAuth2/OpenID**: Chuẩn xác thực
 
-Trương Thành Tâm - 2213045
+## Cấu trúc thư mục (Project Structure)
 
-Võ Lê Sinh - 2212927 
+```
+S3-MRS/
+├── backend/                 # Backend source code
+│   ├── src/                 # Source files
+│   │   ├── config/          # Configuration files (database, etc.)
+│   │   ├── controllers/     # API controllers
+│   │   ├── middleware/      # Middleware functions
+│   │   ├── models/          # Database models
+│   │   ├── repositories/    # Data access layer
+│   │   ├── routes/          # API routes
+│   │   ├── services/        # Business logic
+│   │   └── utils/           # Utility functions
+│   └── test/                # Test files
+│
+├── frontend/                # Frontend source code
+│   ├── src/                 # Source files
+│   │   ├── components/      # Reusable components
+│   │   ├── pages/           # Application pages
+│   │   ├── services/        # API services
+│   │   └── styles/          # CSS/Tailwind styles
+│   └── public/              # Static files
+│
+└── docs/                    # Documentation
+```
 
-Nguyễn Hà Sơn - 2212942
+## Hướng dẫn cài đặt (Installation)
 
+### Yêu cầu (Requirements)
+
+- Node.js (v14+)
+- MySQL (v5.7+)
+- npm/yarn
+
+### Backend Setup
+
+```bash
+cd backend
+npm install
+cp .env.example .env
+# Cấu hình thông tin database và JWT trong file .env
+npm run start:dev
+```
+
+### Frontend Setup
+
+```bash
+cd frontend
+npm install
+cp .env.example .env
+# Cấu hình API endpoint trong file .env
+npm run dev
+```
+
+## Thông tin nhóm phát triển (Development Team)
+
+**Giảng viên hướng dẫn**: Trần Trương Tuấn Phát
+
+**Nhóm**:
+
+- Doãn Phương Hùng Cường - 2310381
+- Nguyễn Thanh Liêm - 2111637
+- Nguyễn Tiến Đăng Khoa - 1832026
+- Trương Thành Tâm - 2213045
+- Võ Lê Sinh - 2212927
+- Nguyễn Hà Sơn - 2212942
+
+## Giấy phép (License)
+
+MIT License
